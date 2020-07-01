@@ -1,0 +1,66 @@
+import React from 'react';
+import {Platform, Dimensions} from 'react-native';
+
+const constants = {
+  // BACKGROUND COLOR CONSTANTS
+  BODY_BG_COLOR: '#f0f0f0',
+  FADE_BODY_BG_COLOR: '#f0f0f8',
+  // app amin blue color
+  //HEADER_BG_COLOR: '#00386C',
+  HEADER_BG_COLOR: '#162d6e',
+
+  MUTED_BG_COLOR: '#e4e4e4',
+
+  // app main green color
+  // PRIMARY_BG_COLOR: '#49B882',
+  SUCCESS_GREEN_COLOR: '#4bb147',
+
+  WARNING_BG_COLOR: '#F0AD4E',
+  DANGER_BG_COLOR: '#D9534F',
+  STATUS_BAR_COLOR: '#001F53',
+
+  // TEXT COLOR CONSTANTS
+  // HIGHTLIGHT_TEXT_COLOR: '#00386C',
+  HIGHTLIGHT_TEXT_COLOR: '#162d6e',
+
+  DARK_PRIMARY_TEXT_COLOR: '#1F1F1F',
+  DARK_SECONDARY_TEXT_COLOR: '#6D6D6D',
+  DARK_DIVIDER_COLOR: '#939393',
+  LIGHT_PRIMARY_TEXT_COLOR: '#B2B2B2',
+  // LIGHT_SECONDARY_TEXT_COLOR: '#BCBCBC',
+  LIGHT_DIVIDER_COLOR: '#909090',
+
+  //OTHER COLOR CONSTANTS
+  TIMECARD_LIST_COLOR: '#00aced',
+  TIMECARD_LIST_FOOTER_COLOR: '#C4D79B',
+  TIMECARD_LIST_HEADER_COLOR: '#B7C0C8',
+  TIMECARD_DETAIL_TIMER_COLOR: '#34BE9E',
+  MAP_GREEN: '#1C9957',
+  // BACK_BUTTON: '#f50',
+  WHITE_COLOR: '#FFF',
+  ORANGE_SHADE: '#DCDCDC',
+  ORANGE: 'orange',
+  GREY: 'grey',
+  RED: 'red',
+  GREEN: 'green',
+
+  // DIMENTIONS CONSTANTS
+  SUBHEADER_MAX_HEIGHT: 40,
+  HEADER_MAX_HEIGHT: Platform.OS === 'ios' ? 90 : 55,
+  HEADER_MAX_HEIGHT_REG: Platform.OS === 'ios' ? 15 : 12,
+  APP_HEIGHT: Dimensions.get('window').height,
+  APP_WIDTH: Dimensions.get('window').width,
+
+  //SPINNER STYLING
+  // SPINSIZE: 50,
+  //SPINTYPE: 'Wave',
+  // SPINCOLOR: '#49B882',
+  //SPINCOLOR: '#4bb147',
+
+  //BUTTON SPINNER STYLING
+  // BUTTONSPINTYPE: 'Circle',
+  // BUTTONSPINSIZE: 24,
+  // BUTTONSPINCOLOR: '#fff',
+};
+
+export default constants;
