@@ -719,9 +719,7 @@ class Home extends React.Component {
             <View style={{marginTop: 10}}>
               <Brands />
             </View>
-            <View style={{marginTop: 2}}>
-              <Brands />
-            </View>
+         
 
             <View
               style={{

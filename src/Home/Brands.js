@@ -7,11 +7,10 @@ import {
   FlatList,
   Image,
 } from 'react-native';
-
+import Axios from 'axios';
 class Brands extends React.Component {
-  componentDidMount(){
-    this.getCategory()
-
+  componentDidMount() {
+    this.getBrands();
   }
   constructor(props) {
     super(props);
@@ -26,7 +25,7 @@ class Brands extends React.Component {
       brandsData: [],
     };
   }
-  getCategory=()=>{
+  getCategory = async () => {
     await Axios.get(
       'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/account/banner/supplier/1',
       {
@@ -35,25 +34,26 @@ class Brands extends React.Component {
           'Content-type': 'application/json',
         },
       },
-    ).then(res=>{})
-  }
+    ).then(res => {});
+  };
   getBrands = async () => {
     this.setState({isBrandsLoading: true});
     console.log('inside get brands');
 
-    var url = fetchCategoriesUrl();
-
-    await Axios.get(url, {
-      headers: {
-        Authorization: 'bearer ' + '',
-        'Content-type': 'application/json',
+    await Axios.get(
+      'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/stores/categories/',
+      {
+        headers: {
+          Authorization: 'bearer ' + '',
+          'Content-type': 'application/json',
+        },
+        //   timeout: 15000,
       },
-      //   timeout: 15000,
-    })
+    )
       .then(response => {
         console.log('Brands data->', response.data);
         this.setState({
-          brandsData: response.data,
+          brandsData: response.data.object,
           isBrandsLoading: false,
         });
       })
@@ -69,25 +69,25 @@ class Brands extends React.Component {
     return (
       <TouchableOpacity
         style={{
-          height: 80,
-          width: Dimensions.get('window').width / 6,
+          height: 90,
+          width: Dimensions.get('window').width / 4.5,
           justifyContent: 'center',
           paddingVertical: 2.5,
           borderColor: '#efefef',
           borderTopWidth: 1,
           marginTop: 15,
+          marginLeft: '2.2%',
         }}>
         <View
           style={{
             flexDirection: 'row',
-            height: 80,
+            height: 90,
             width: Dimensions.get('window').width / 6,
-            justifyContent: 'space-between',
             alignSelf: 'center',
+            justifyContent: 'space-between',
           }}>
           <View
             style={{
-              justifyContent: 'space-evenly',
               height: 65,
               width: '100%',
             }}>
@@ -99,6 +99,8 @@ class Brands extends React.Component {
                 borderRadius: 5,
                 justifyContent: 'center',
                 overflow: 'hidden',
+                overflow: 'hidden',
+                borderRadius: 5,
               }}>
               <Image
                 style={{
@@ -107,14 +109,18 @@ class Brands extends React.Component {
                   resizeMode: 'contain',
                   alignSelf: 'center',
                 }}
-                source={item.image}
+                source={
+                  item && item.iconMedia && item.iconMedia.mediaUrl
+                    ? {uri: item.iconMedia.mediaUrl}
+                    : require('../assets/foodbg.png')
+                }
               />
             </View>
+            <View style={{width: 1, height: 4}}></View>
             <Text
               style={{
                 textAlign: 'center',
                 fontWeight: 'bold',
-                marginTop: 10,
                 fontSize: 10,
               }}>
               {item.name}
@@ -129,7 +135,7 @@ class Brands extends React.Component {
     return (
       <FlatList
         renderItem={this.render_brands}
-        horizontal
+        numColumns={4}
         style={{marginTop: -4}}
         contentContainerStyle={{
           justifyContent: 'space-evenly',
@@ -137,7 +143,7 @@ class Brands extends React.Component {
           width: Dimensions.get('window').width,
         }}
         showsHorizontalScrollIndicator={false}
-        data={this.state.data}
+        data={this.state.brandsData}
         keyExtractor={(item, index) => index.toString()}
       />
     );

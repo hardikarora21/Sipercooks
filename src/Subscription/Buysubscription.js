@@ -123,93 +123,101 @@ export default class Buysubscription extends React.Component {
             SUBSCRIPTION CHECKOUT
           </Text>
         </View>
-        <View
-          style={{
-            height: 100,
-            backgroundColor: 'white',
-            paddingHorizontal: 15,
-            marginTop: 10,
-            marginBottom: 8.5,
-            paddingVertical: 10,
-          }}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flexDirection: 'row'}}></View>
-            <TouchableOpacity
-              onPress={() => {
-                this.props.navigation.navigate('Address');
-              }}>
-              <View
-                style={{
-                  justifyContent: 'center',
-                  paddingHorizontal: 5,
-                  paddingVertical: 5,
-                  borderWidth: 1,
-                  borderColor: '#ea0016',
-                  borderRadius: 20,
-                }}>
-                <Text style={{fontSize: 10, alignSelf: 'center'}}>CHANGE</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <Text
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{height: DH / 6, backgroundColor: '#e1e1e1'}}>
+          <View
             style={{
-              fontSize: 10,
-              color: '#a7a7a7',
-              marginTop: 1.5,
-              width: '70%',
-            }}
-            numberOfLines={6}>
-            {'Custom Address :'}
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 60,
-            paddingTop: 20,
-            paddingHorizontal: 10,
-            backgroundColor: 'white',
-            marginTop: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text>Starting Date for Subscription :</Text>
-          <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
-            {this.props.route.params.startDate}
-            {' , '}
-            {this.props.route.params.startDay}
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 60,
-            paddingTop: 20,
-            paddingHorizontal: 10,
-            backgroundColor: 'white',
-            marginTop: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text>Number of Days for Subscription :</Text>
-          <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
-            {this.props.route.params.PlanDays} Days
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 60,
-            paddingTop: 20,
-            paddingHorizontal: 10,
-            backgroundColor: 'white',
-            marginTop: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text>Total Price To be Paid : </Text>
-          <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
-            Rs. {this.props.route.params.Amount}
-          </Text>
-        </View>
+              height: 100,
+              backgroundColor: 'white',
+              paddingHorizontal: 15,
+              marginTop: 10,
+              marginBottom: 8.5,
+              paddingVertical: 10,
+            }}>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <View style={{flexDirection: 'row'}}></View>
+              <TouchableOpacity
+                onPress={() => {
+                  this.props.navigation.navigate('Address');
+                }}>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    paddingHorizontal: 5,
+                    paddingVertical: 5,
+                    borderWidth: 1,
+                    borderColor: '#ea0016',
+                    borderRadius: 20,
+                  }}>
+                  <Text style={{fontSize: 10, alignSelf: 'center'}}>
+                    CHANGE
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <Text
+              style={{
+                fontSize: 10,
+                color: '#a7a7a7',
+                marginTop: 1.5,
+                width: '70%',
+              }}
+              numberOfLines={6}>
+              {'Custom Address :'}
+            </Text>
+          </View>
+          <View
+            style={{
+              height: 60,
+              paddingTop: 20,
+              paddingHorizontal: 10,
+              backgroundColor: 'white',
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            <Text>Starting Date for Subscription :</Text>
+            <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
+              {this.props.route.params.startDate}
+              {' , '}
+              {this.props.route.params.startDay}
+            </Text>
+          </View>
+          <View
+            style={{
+              height: 60,
+              paddingTop: 20,
+              paddingHorizontal: 10,
+              backgroundColor: 'white',
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            <Text>Number of Days for Subscription :</Text>
+            <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
+              {this.props.route.params.PlanDays} Days
+            </Text>
+          </View>
+          <View
+            style={{
+              height: 60,
+              paddingTop: 20,
+              paddingHorizontal: 10,
+              backgroundColor: 'white',
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            <Text>Total Price To be Paid : </Text>
+            <Text style={{fontWeight: 'bold', color: '#ea0016'}}>
+              Rs. {this.props.route.params.Amount}
+            </Text>
+          </View>
+        </ScrollView>
+
         <TouchableOpacity
           onPress={() =>
             this.props.navigation.navigate('PaymentOptions', {
@@ -224,12 +232,10 @@ export default class Buysubscription extends React.Component {
           }>
           <View
             style={{
-              height: 45,
-              borderRadius: 12,
-              width: Dimensions.get('window').width / 1.5,
+              height: DH / 12,
+              width: Dimensions.get('window').width,
               alignSelf: 'center',
               backgroundColor: '#ea0016',
-              marginTop: 25,
               justifyContent: 'center',
             }}>
             <Text
@@ -239,7 +245,7 @@ export default class Buysubscription extends React.Component {
                 fontSize: 14,
                 fontWeight: 'bold',
               }}>
-              BUY SUBSCRIPTION
+              MAKE PAYMENT
             </Text>
           </View>
         </TouchableOpacity>
