@@ -143,12 +143,17 @@ class Setting extends React.Component {
     console.log('Data to be uploaded', stringifiedDataToBeUploaded);
     // dataToBeUploaded.description = this.state.description;
 
-    await Axios.put(url, stringifiedDataToBeUploaded, {
-      headers: {
-        Authorization: 'Bearer ' + this.props.login.accessToken,
-        'Content-Type': 'application/json',
+    await Axios.put(
+      'http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/api/v3/customers/' +
+        customerId,
+      stringifiedDataToBeUploaded,
+      {
+        headers: {
+          Authorization: 'Bearer ' + this.props.login.accessToken,
+          'Content-Type': 'application/json',
+        },
       },
-    })
+    )
       .then(resp => {
         console.log(resp);
         if (resp.data.status) {
@@ -393,11 +398,7 @@ class Setting extends React.Component {
                   this.setState({phoneNumber: text});
                 }}
                 placeholderTextColor="#e1e1e1"
-                placeholder={
-                  this.state.userData.phoneNo
-                    ? this.state.userData.phoneNo
-                    : 'Phone Number'
-                }
+                placeholder={'Phone Number'}
                 blurOnSubmit={true}
               />
             </View>
@@ -518,7 +519,4 @@ class Setting extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Setting);
+export default connect(mapStateToProps, mapDispatchToProps)(Setting);

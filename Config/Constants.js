@@ -1,4 +1,4 @@
-var supplierId = 59;
+var supplierId = 7;
 
 const staggingStoreManager =
   'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/';
@@ -78,10 +78,16 @@ export const promoWalletAndMainWalletBalance = customerId => {
   );
 };
 export const getReferalCodeUrl = customerId => {
-  return 'GET50';
+  return (
+    staggingAccountManager +
+    'api/v3/account/referral/customer/' +
+    customerId +
+    '?currentPage=0&itemPerPage=0'
+  );
 };
-export const createReferalCodeUrl = customerId => {
-  return 'GET50';
+
+export const createReferalCodeUrl = () => {
+  return staggingAccountManager + 'api/v3/account/referral/';
 };
 export const userTransactionsInWallet = customerId => {
   return (
@@ -91,33 +97,27 @@ export const userTransactionsInWallet = customerId => {
     '?currentPage=0&itemPerPage=0'
   );
 };
-
+export const cartPostUrl = () => {
+  return staggingStoreManager + 'api/v3/store/cart';
+};
 export const deliveriblityCheckUrl = (lattitude, longitude) => {
   return (
-    'http://ec2-35-154-211-17.ap-south-1.compute.amazonaws.com/api/v3/suppliers/check/delivery/59/' +
+    'http://ec2-35-154-211-17.ap-south-1.compute.amazonaws.com/api/v3/suppliers/1/' +
     lattitude +
     '/' +
     longitude
   );
 };
 
-export const getNearestStoreUrl = (supplierId, latitude, longitude) => {
-  return (
-    'http://ec2-35-154-211-17.ap-south-1.compute.amazonaws.com/api/v3/suppliers/' +
-    supplierId +
-    '/' +
-    latitude +
-    '/' +
-    longitude
-  );
+export const getNearestStoreUrl = (latitude, longitude) => {
+  return staggingAccountManager + '1/' + latitude + '/' + longitude;
 };
 
 export const userOrdersUrl = customerId => {
   return (
-    'http://ec2-13-127-106-130.ap-south-1.compute.amazonaws.com/api/v3/store/cart/order/customer/' +
+    staggingStoreManager +
+    'api/v3/store/cart/order/customer/' +
     customerId +
-    '/' +
-    supplierId +
     '?cancelled=1'
   );
 };
@@ -127,10 +127,7 @@ export const userOrdersUrl = customerId => {
 // };
 
 export const updateuserProfileUrl = customerId => {
-  return (
-    'http://ec2-35-154-211-17.ap-south-1.compute.amazonaws.com/api/v3/customers/' +
-    customerId
-  );
+  return staggingAccountManager + 'api/v3/customers/' + customerId;
 };
 
 export const getUserProfile = customerId => {
@@ -142,7 +139,7 @@ export const getUserProfile = customerId => {
 };
 
 export const otpVerificationUrl = () => {
-  return 'http://ec2-13-234-237-49.ap-south-1.compute.amazonaws.com/oauth/token';
+  return 'http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/oauth/token';
 };
 
 export const getProductByNameAndId = (productName, productId) => {
@@ -157,9 +154,7 @@ export const getProductByNameAndId = (productName, productId) => {
 
 export const validatePhoneNumberUrl = (supplierID, phoneNumber) => {
   return (
-    'http://ec2-13-234-237-49.ap-south-1.compute.amazonaws.com/api/v3/' +
-    supplierID +
-    '/otp/' +
+    'http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/api/v3/1/otp/' +
     phoneNumber
   );
 };

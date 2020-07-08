@@ -45,6 +45,10 @@ import Axios from 'axios';
 var Querystringified = require('querystringify');
 import {otpVerificationUrl} from '../../Config/Constants';
 import Checkout from '../Checkout';
+import Subscription from '../Subscription';
+import Subscriptiondetails from '../Subscription/Subcriptiondetailpage';
+import Payments from '../Checkout/Payments';
+import Buysubscription from '../Subscription/Buysubscription';
 
 const Stack = createStackNavigator();
 
@@ -118,8 +122,29 @@ function HomeStack() {
         options={stacknavigatorOptions}
       />
       <Stack.Screen
+        name="PaymentOptions"
+        component={Payments}
+        options={stacknavigatorOptions}
+      />
+      <Stack.Screen
         name="Productdetails"
         component={Productdetails}
+        options={stacknavigatorOptions}
+      />
+
+      <Stack.Screen
+        name="Subscription"
+        component={Subscription}
+        options={stacknavigatorOptions}
+      />
+      <Stack.Screen
+        name="SubscriptionDetail"
+        component={Subscriptiondetails}
+        options={stacknavigatorOptions}
+      />
+      <Stack.Screen
+        name="BuySubscription"
+        component={Buysubscription}
         options={stacknavigatorOptions}
       />
       <Stack.Screen
@@ -127,6 +152,7 @@ function HomeStack() {
         component={AddAddress}
         options={stacknavigatorOptions}
       />
+
       {/* <Stack.Screen
         name="Success"
         component={Success}
@@ -216,6 +242,11 @@ function CartStack() {
       <Stack.Screen
         name="Checkout"
         component={Checkout}
+        options={stacknavigatorOptions}
+      />
+      <Stack.Screen
+        name="PaymentOptions"
+        component={Payments}
         options={stacknavigatorOptions}
       />
       <Stack.Screen
@@ -323,14 +354,6 @@ class BottomTabNavigator extends React.Component {
                       color={color}
                     />
                   );
-                } else if (route.name === 'Categories') {
-                  return (
-                    <Icon
-                      name={focused ? 'cards' : 'cards-outline'}
-                      size={23}
-                      color={color}
-                    />
-                  );
                 } else if (route.name === 'Cart') {
                   return (
                     <>
@@ -372,7 +395,6 @@ class BottomTabNavigator extends React.Component {
               },
             })}>
             <Tab.Screen name="Home" component={HomeStack} />
-            <Tab.Screen name="Categories" component={CategoriesStack} />
             <Tab.Screen name="Cart" component={CartStack} />
             <Tab.Screen name="Wallet" component={WalletStack} />
             <Tab.Screen name="Account" component={ProfileStack} />
@@ -413,7 +435,4 @@ class BottomTabNavigator extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(BottomTabNavigator);
+export default connect(mapStateToProps, mapDispatchToProps)(BottomTabNavigator);

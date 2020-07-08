@@ -9,20 +9,34 @@ import {
 } from 'react-native';
 
 class Brands extends React.Component {
+  componentDidMount(){
+    this.getCategory()
+
+  }
   constructor(props) {
     super(props);
     this.state = {
       data: [
-        {name: 'Britania', image: require('../assets/i1.jpg')},
-        {name: 'Amul', image: require('../assets/i2.jpg')},
-        {name: 'Nestle', image: require('../assets/i3.png')},
-        // {name: 'Pepsi', image: require('../assets/i4.png')},
-        // {name: 'ITC', image: require('../assets/i5.jpeg')},
+        {name: 'Pizza', image: require('../assets/cat-1.png')},
+        {name: 'Noodles', image: require('../assets/cat-2.png')},
+        {name: 'Pasta', image: require('../assets/cat-3.png')},
+        {name: 'Pasta', image: require('../assets/cat-4.png')},
+        {name: 'Pizza', image: require('../assets/cat-1.png')},
       ],
       brandsData: [],
     };
   }
-
+  getCategory=()=>{
+    await Axios.get(
+      'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/account/banner/supplier/1',
+      {
+        headers: {
+          Authorization: 'bearer ' + '',
+          'Content-type': 'application/json',
+        },
+      },
+    ).then(res=>{})
+  }
   getBrands = async () => {
     this.setState({isBrandsLoading: true});
     console.log('inside get brands');
@@ -55,9 +69,8 @@ class Brands extends React.Component {
     return (
       <TouchableOpacity
         style={{
-          backgroundColor: 'white',
-          height: 100,
-          width: Dimensions.get('window').width / 3.05,
+          height: 80,
+          width: Dimensions.get('window').width / 6,
           justifyContent: 'center',
           paddingVertical: 2.5,
           borderColor: '#efefef',
@@ -67,29 +80,45 @@ class Brands extends React.Component {
         <View
           style={{
             flexDirection: 'row',
-            height: 95,
-            width: Dimensions.get('window').width / 3.05,
+            height: 80,
+            width: Dimensions.get('window').width / 6,
             justifyContent: 'space-between',
             alignSelf: 'center',
           }}>
           <View
             style={{
               justifyContent: 'space-evenly',
-              height: 95,
+              height: 65,
               width: '100%',
             }}>
             <View
               style={{
-                height: '80%',
+                height: '90%',
                 width: '100%',
                 backgroundColor: 'white',
-                borderRadius: 3,
+                borderRadius: 5,
+                justifyContent: 'center',
+                overflow: 'hidden',
               }}>
               <Image
-                style={{height: '100%', width: '100%', resizeMode: 'contain'}}
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  resizeMode: 'contain',
+                  alignSelf: 'center',
+                }}
                 source={item.image}
               />
             </View>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontWeight: 'bold',
+                marginTop: 10,
+                fontSize: 10,
+              }}>
+              {item.name}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>

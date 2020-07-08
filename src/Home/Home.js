@@ -31,7 +31,7 @@ import {
 import {connect} from 'react-redux';
 import {deleteAllDefaultVarinats} from '../Redux/Cart/ActionCreators';
 import {profileVisitedOnes, logOut} from '../Redux/Auth/ActionCreatore';
-
+import Brands from './Brands';
 const mapStateToProps = state => {
   return {
     cart: state.cart,
@@ -51,12 +51,7 @@ const mapDispatchToProps = dispatch => ({
 
 class Home extends React.Component {
   state = {
-    images: [
-      require('../assets/b2.jpg'),
-      require('../assets/b2.jpg'),
-      require('../assets/b2.jpg'),
-      require('../assets/b2.jpg'),
-    ],
+    images: [],
     data: [
       {name: 'Britania', image: require('../assets/i1.jpg')},
       {name: 'Amul', image: require('../assets/i2.jpg')},
@@ -92,15 +87,41 @@ class Home extends React.Component {
     this.setState({showmodal: true});
     this.getCategoryDataFromServer();
     this.props.deleteAllDefaultVarinats();
+    this.getBanners();
   }
 
+  getBanners = async () => {
+    await Axios.get(
+      'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/account/banner/supplier/1',
+      {
+        headers: {
+          Authorization: 'bearer ' + '',
+          'Content-type': 'application/json',
+        },
+      },
+    ).then(response => {
+      const Arr = response.data.object;
+      for (let index = 0; index < Arr.length; index++) {
+        var D = Arr[index].bannerImageUrl;
+        this.state.images.push(D);
+      }
+      console.log('banner data  --> ' + this.state.images);
+    });
+  };
   getCategoryDataFromServer = async () => {
     this.setState({isCategoryDataLoading: true});
     console.log('inside getCategoryDataFromServer');
     var self = this;
 
     var url = fetchCategoriesUrl();
-
+    if (this.props.login.skippedLogin == false) {
+      url =
+        url +
+        '1/' +
+        this.props.addresses.selectedAddress.latitude +
+        '/' +
+        this.props.addresses.selectedAddress.longitude;
+    }
     await Axios.get(url, {
       headers: {
         Authorization: 'bearer ' + '',
@@ -192,11 +213,12 @@ class Home extends React.Component {
                 borderRadius: 5,
                 alignSelf: 'center',
                 justifyContent: 'center',
+                overflow: 'hidden',
               }}>
               <Image
                 style={{
-                  height: '90%',
-                  width: '90%',
+                  height: '95%',
+                  width: '95%',
                   resizeMode: 'cover',
                   borderRadius: 5,
                   alignSelf: 'center',
@@ -227,7 +249,7 @@ class Home extends React.Component {
                 style={{
                   fontSize: 8,
                 }}>
-                {item.description}
+                {item.supplierType}
               </Text>
 
               <Text
@@ -235,7 +257,18 @@ class Home extends React.Component {
                   fontSize: 10,
                   paddingTop: 10,
                 }}>
-                Kormangla | 3.2 km
+                {item.storeList &&
+                item.storeList[0] &&
+                item.storeList[0].addressLine1
+                  ? ' ' + '\n' + ' '
+                  : ' ' + '\n' + ' '}
+                {'\n'}
+                {item.storeList &&
+                item.storeList[0] &&
+                item.storeList[0].deliverDistance
+                  ? item.storeList[0].deliverDistance + ' '
+                  : null}
+                km away
               </Text>
               <View
                 style={{
@@ -292,7 +325,7 @@ class Home extends React.Component {
                     textAlign: 'center',
                     fontWeight: 'bold',
                   }}>
-                  Rs. 100 for one
+                  Rs. {item.minOrderValue} for one
                 </Text>
               </View>
             </View>
@@ -539,8 +572,9 @@ class Home extends React.Component {
     console.disableYellowBox = true;
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+        <StatusBar backgroundColor={'#fbfbfb'} barStyle={'dark-content'} />
+
         <View style={{backgroundColor: '#efefef', flex: 1}}>
-          <StatusBar backgroundColor={'white'} barStyle={'dark-content'} />
           <View
             style={{
               height: '10%',
@@ -682,32 +716,13 @@ class Home extends React.Component {
                 />
               </View>
             </View>
-            <FlatList
-              renderItem={this.render_brands}
-              horizontal
-              style={{marginTop: -4}}
-              contentContainerStyle={{
-                justifyContent: 'space-evenly',
-                alignSelf: 'center',
-                width: Dimensions.get('window').width,
-              }}
-              showsHorizontalScrollIndicator={false}
-              data={this.state.data}
-              keyExtractor={(item, index) => index.toString()}
-            />
-            <FlatList
-              renderItem={this.render_brands}
-              horizontal
-              style={{marginTop: -4}}
-              contentContainerStyle={{
-                justifyContent: 'space-evenly',
-                alignSelf: 'center',
-                width: Dimensions.get('window').width,
-              }}
-              showsHorizontalScrollIndicator={false}
-              data={this.state.data}
-              keyExtractor={(item, index) => index.toString()}
-            />
+            <View style={{marginTop: 10}}>
+              <Brands />
+            </View>
+            <View style={{marginTop: 2}}>
+              <Brands />
+            </View>
+
             <View
               style={{
                 height: 350,
@@ -729,13 +744,24 @@ class Home extends React.Component {
                   }}>
                   Newly Launched
                 </Text>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color: '#a7a7a7',
-                  }}>
-                  Newly Launched Products for Needs Market
-                </Text>
+                <View style={{flexDirection: 'row'}}>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      color: '#a7a7a7',
+                    }}>
+                    Newly Launched Products for{' '}
+                  </Text>
+                  <Image
+                    style={{
+                      height: 15,
+                      width: 50,
+                      resizeMode: 'contain',
+                      marginTop: -2.1,
+                    }}
+                    source={require('../assets/llog.png')}
+                  />
+                </View>
               </View>
               <View
                 style={{

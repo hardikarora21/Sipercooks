@@ -129,7 +129,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.design"
+        applicationId "com.supercooks"
         minSdkVersion 21
         targetSdkVersion 26
         //         minSdkVersion rootProject.ext.minSdkVersion

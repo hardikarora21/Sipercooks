@@ -1,4 +1,5 @@
 import * as ActionTypes from './ActionTypes';
+import {Alert} from 'react-native';
 
 // default variants
 export const createDefaultVariants = objectOfProducts => dispatch => {
@@ -30,9 +31,37 @@ export const editVariant = (newVariantInfo, indexOfProduct) => ({
   payload: {newVariantInfo: newVariantInfo, indexOfProduct: indexOfProduct},
 });
 
-// cart
-export const addOneItemToCart = object => dispatch => {
-  dispatch(addItemToCart(object));
+export const addOneItemToCart = (object, first) => dispatch => {
+  console.log(
+    'cart in ftttttttt-------------------------------------------------------------------------------> ' +
+      first,
+  );
+  if (first == 'Empty' || first == undefined) {
+    dispatch(addItemToCart(object));
+  } else {
+    if (object.supplierId == first.supplierId) {
+      dispatch(addItemToCart(object));
+    } else {
+      Alert.alert(
+        'Please Clear the Cart!',
+        'You need to clear the cart to add this Product.',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {
+            text: 'Clear Cart',
+            onPress: () => {
+              dispatch(clearCart());
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
+  }
 };
 
 export const addItemToCart = product => ({

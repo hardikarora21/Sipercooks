@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {FlatList} from 'react-native-gesture-handler';
+import {getPreciseDistance} from 'geolib';
 import Axios from 'axios';
 import {
   promoWalletAndMainWalletBalance,
@@ -52,6 +53,7 @@ function toast(message) {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const millisecondsInOneDay = 24 * 60 * 60 * 1000;
 const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+const nineOClock = startOfDay.getTime() + 9 * 60 * 60 * 1000;
 const twelveOClockAtNight = startOfDay.getTime() + 24 * 60 * 60 * 1000;
 const twentyOClock = startOfDay.getTime() + 20 * 60 * 60 * 1000;
 const nineteenOClock = startOfDay.getTime() + 19 * 60 * 60 * 1000;
@@ -60,6 +62,8 @@ const eighteenOClock = startOfDay.getTime() + 18 * 60 * 60 * 1000;
 const fifteenOClock = startOfDay.getTime() + 15 * 60 * 60 * 1000;
 const twentyOneOClock = startOfDay.getTime() + 21.5 * 60 * 60 * 1000;
 const tenThirtyOClock = startOfDay.getTime() + 10.5 * 60 * 60 * 1000;
+const elevenOClock = startOfDay.getTime() + 11 * 60 * 60 * 1000;
+const thirteenOClock = startOfDay.getTime() + 13 * 60 * 60 * 1000;
 
 const mapStateToProps = state => {
   return {
@@ -69,6 +73,7 @@ const mapStateToProps = state => {
     user: state.user,
     nearestSupplier: state.nearestSupplier,
     addresses: state.addresses,
+    walletData: state.walletData,
   };
 };
 
@@ -105,29 +110,36 @@ class Checkout extends React.Component {
       uploadingOrderDataToServer: false,
       tipAmount: '',
       isGivingTip: false,
-      selectedTipValue: -1,
+      selectedTipValue: -1,perkm:0,supLat:0,suplong:0,finalDc:0
     };
   }
 
   componentDidMount() {
-    console.log(
-      'HEar is the nearest supplier =========',
-      JSON.stringify(this.props.nearestSupplier.supplierIdWithMinDist),
-    );
+  
+this.distancecalculater()
 
-    console.log('Here is now', new Date().getTime());
-    console.log('Here is startOfDay', startOfDay);
-    console.log('Here is twelveOClockAtNight', twelveOClockAtNight);
-    console.log('Here is twentyOClock', twentyOClock);
-    console.log('Here is nineteenOClock', nineteenOClock);
-    console.log('Here is nineteenThirtyOClock', nineteenThirtyOClock);
-    console.log('Here is eighteenOClock', eighteenOClock);
-    console.log('Here is fifteenOClock', fifteenOClock);
-    console.log('Here is twentyOneOClock', twentyOneOClock);
-    console.log('User data', this.props.user);
     this.getPromoWalletAndMainWalletBalance();
   }
+distancecalculater= async ()=>{
+  var id=this.props.cart.cart[0].supplierId
 
+await Axios.get('http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/api/v3/suppliers/1')
+.then((res)=>{
+
+  this.setState({perkm:res.data.object[0].deliveryChargesPerKm})
+})
+.catch((error)=>console.log("error for delivery charges"+error))
+await Axios.get('http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/api/v3/suppliers/'+id)
+.then((res)=>{
+
+  this.setState({supLat:res.data.object[0].storeList[0].latitude,suplong:res.data.object[0].storeList[0].longitude})
+})
+.catch((error)=>console.log("error for delivery charges"+error))
+var dis=getPreciseDistance({latitude:this.props.addresses.selectedAddress.latitude,longitude:this.props.addresses.selectedAddress.longitude}
+  ,{latitude:this.state.supLat,longitude:this.state.suplong})
+this.setState({finalDc:this.state.perkm*dis/1000})
+
+}
   renderHomeDeliveryTimeSlots = () => {
     var nowComplete = new Date();
     var now = nowComplete.getTime();
@@ -148,7 +160,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -163,7 +175,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -188,7 +200,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -203,7 +215,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -228,7 +240,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -243,7 +255,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -252,7 +264,87 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Within 4 - 6 Hours
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -264,29 +356,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForHomeDelivery: 0,
+                  SelectedTimeSlotForHomeDelivery: 5,
                   hasSelectedTimeSlotForHomeDelivery: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 1.5 hour after the store opens',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -301,7 +385,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -326,7 +410,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -341,7 +425,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -366,7 +450,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -381,7 +465,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -390,7 +474,87 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Within 4 - 6 Hours
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -402,29 +566,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForHomeDelivery: 0,
+                  SelectedTimeSlotForHomeDelivery: 5,
                   hasSelectedTimeSlotForHomeDelivery: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 1.5 hour after the store opens',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -439,7 +595,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -455,29 +611,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForHomeDelivery: 1,
+                  SelectedTimeSlotForHomeDelivery: 6,
                   hasSelectedTimeSlotForHomeDelivery: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 3 hours after the store opens',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -492,7 +640,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -517,7 +665,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -532,7 +680,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -541,41 +689,23 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Within 4 - 6 Hours
+                  02 PM - 04 PM
                 </Text>
               </View>
             </TouchableOpacity>
-          </>
-        );
-      } else {
-        return (
-          <>
             <TouchableOpacity
-              onPress={() => {
-                this.setState({
-                  SelectedTimeSlotForHomeDelivery: 0,
-                  hasSelectedTimeSlotForHomeDelivery: true,
-                });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 1.5 hour after the store opens',
-                  );
-              }}>
+              onPress={() => toast('This slot is closed for today')}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#f8f8f8',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -590,7 +720,97 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > thirteenOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 5,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -606,29 +826,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForHomeDelivery: 1,
+                  SelectedTimeSlotForHomeDelivery: 6,
                   hasSelectedTimeSlotForHomeDelivery: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 3 hours after the store opens',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -643,7 +855,452 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 1
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 3 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 9,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > elevenOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 5,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 1.5 hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 6,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 3 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot is closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 8,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 9,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now < elevenOClock && now > nineOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 5,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 1.5 hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 6,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -659,29 +1316,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForHomeDelivery: 2,
+                  SelectedTimeSlotForHomeDelivery: 7,
                   hasSelectedTimeSlotForHomeDelivery: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, products will be deliverd Within 4 - 6 hours after the store opens',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -696,7 +1345,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForHomeDelivery == 2
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -705,7 +1354,557 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Within 4 - 6 Hours
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 8,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 9,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > startOfDay && now < nineOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 10,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 10
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 10
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Before 11:30 AM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 11,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 11
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 11
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Before 01 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 7,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 8,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 9,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 5,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 1.5 hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 6,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  Within 3 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 7,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 8,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 9,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -715,73 +1914,61 @@ class Checkout extends React.Component {
     } else
       return (
         <>
-          <TouchableOpacity
-            onPress={() => {
-              this.setState({
-                SelectedTimeSlotForHomeDelivery: 0,
-                hasSelectedTimeSlotForHomeDelivery: true,
-              });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 1.5 hour after the store opens',
-              //   );
-            }}>
-            <View
-              style={{
-                height: 50,
-                backgroundColor: 'white',
-                marginTop: 1.5,
-                justifyContent: 'flex-start',
-                flexDirection: 'row',
+          {now > twentyOneOClock &&
+          now < twelveOClockAtNight &&
+          this.state.selectedDay === 1 ? null : (
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForHomeDelivery: 0,
+                  hasSelectedTimeSlotForHomeDelivery: true,
+                });
               }}>
               <View
-                style={[
-                  this.state.SelectedTimeSlotForHomeDelivery == 0
-                    ? {backgroundColor: '#ea0016'}
-                    : {backgroundColor: '#efefef'},
-                  ,
-                  {
-                    height: 20,
-                    width: 20,
-                    borderRadius: 360,
-                    alignSelf: 'center',
-                    marginLeft: 10,
-                  },
-                ]}
-              />
-              <Text
-                style={[
-                  this.state.SelectedTimeSlotForHomeDelivery == 0
-                    ? {color: '#ea0016'}
-                    : {color: 'black'},
-                  {
-                    alignSelf: 'center',
-                    fontSize: 14,
-                    paddingLeft: 15,
-                  },
-                ]}>
-                09 AM - 11 AM
-              </Text>
-            </View>
-          </TouchableOpacity>
+                style={{
+                  height: 50,
+                  backgroundColor: 'white',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForHomeDelivery == 0
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  10 AM - 12 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             onPress={() => {
               this.setState({
                 SelectedTimeSlotForHomeDelivery: 1,
                 hasSelectedTimeSlotForHomeDelivery: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 3 hours after the store opens',
-              //   );
             }}>
             <View
               style={{
@@ -817,7 +2004,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                11 AM - 01 PM
+                12 PM - 02 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -827,14 +2014,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForHomeDelivery: 2,
                 hasSelectedTimeSlotForHomeDelivery: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 4 - 6 hours after the store opens',
-              //   );
             }}>
             <View
               style={{
@@ -870,7 +2049,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                01 PM - 03 PM
+                02 PM - 04 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -881,14 +2060,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForHomeDelivery: 3,
                 hasSelectedTimeSlotForHomeDelivery: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 1.5 hour after the store opens',
-              //   );
             }}>
             <View
               style={{
@@ -924,7 +2095,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                03 PM - 05 PM
+                04 PM - 06 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -934,14 +2105,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForHomeDelivery: 4,
                 hasSelectedTimeSlotForHomeDelivery: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 3 hours after the store opens',
-              //   );
             }}>
             <View
               style={{
@@ -977,60 +2140,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                05 PM - 07 PM
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              this.setState({
-                SelectedTimeSlotForHomeDelivery: 5,
-                hasSelectedTimeSlotForHomeDelivery: true,
-              });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, products will be deliverd Within 4 - 6 hours after the store opens',
-              //   );
-            }}>
-            <View
-              style={{
-                height: 50,
-                backgroundColor: 'white',
-                marginTop: 1.5,
-                justifyContent: 'flex-start',
-                flexDirection: 'row',
-              }}>
-              <View
-                style={[
-                  this.state.SelectedTimeSlotForHomeDelivery == 5
-                    ? {backgroundColor: '#ea0016'}
-                    : {backgroundColor: '#efefef'},
-                  ,
-                  {
-                    height: 20,
-                    width: 20,
-                    borderRadius: 360,
-                    alignSelf: 'center',
-                    marginLeft: 10,
-                  },
-                ]}
-              />
-              <Text
-                style={[
-                  this.state.SelectedTimeSlotForHomeDelivery == 5
-                    ? {color: '#ea0016'}
-                    : {color: 'black'},
-                  {
-                    alignSelf: 'center',
-                    fontSize: 14,
-                    paddingLeft: 15,
-                  },
-                ]}>
-                07 PM - 09 PM
+                06 PM - 08 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -1047,7 +2157,7 @@ class Checkout extends React.Component {
         return (
           <>
             <TouchableOpacity
-              onPress={() => toast('This slot is closed for today')}>
+              onPress={() => toast('This slot has been closed for today')}>
               <View
                 style={{
                   height: 50,
@@ -1058,7 +2168,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1073,7 +2183,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1082,12 +2192,12 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 1 hour
+                  After 1 Hour
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => toast('This slot is closed for today')}>
+              onPress={() => toast('This slot has been closed for today')}>
               <View
                 style={{
                   height: 50,
@@ -1098,7 +2208,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1113,7 +2223,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1122,12 +2232,12 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 2 hours
+                  After 2 Hours
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => toast('This slot is closed for today')}>
+              onPress={() => toast('This slot has been closed for today')}>
               <View
                 style={{
                   height: 50,
@@ -1138,7 +2248,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1153,7 +2263,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1162,7 +2272,87 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 4 hours or next day
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -1174,29 +2364,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForSelfPickup: 0,
+                  SelectedTimeSlotForSelfPickup: 5,
                   hasSelectedTimeSlotForSelfPickup: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, you can pick your order after 11:30 AM',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1211,7 +2393,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1220,12 +2402,12 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 1 hour
+                  After 1 Hour
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => toast('This slot is closed for today')}>
+              onPress={() => toast('This slot has been closed for today')}>
               <View
                 style={{
                   height: 50,
@@ -1236,7 +2418,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1251,7 +2433,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1260,12 +2442,12 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 2 hours
+                  After 2 Hours
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => toast('This slot is closed for today')}>
+              onPress={() => toast('This slot has been closed for today')}>
               <View
                 style={{
                   height: 50,
@@ -1276,7 +2458,7 @@ class Checkout extends React.Component {
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1291,7 +2473,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1300,7 +2482,977 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 4 hours or next day
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > fifteenOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 5,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 1 Hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 6,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 2 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > thirteenOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 5,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 1 Hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 6,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 2 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 9,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > elevenOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 5,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 5
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 1 Hour
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 6,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 6
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 2 Hours
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => toast('This slot has been closed for today')}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#f8f8f8',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 8,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 9,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        );
+      } else if (now > startOfDay && now < nineOClock) {
+        return (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 10,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 10
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 10
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 11 AM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 11,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 11
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 11
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  After 12 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 7,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 7
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 8,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 9,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -1312,29 +3464,21 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForSelfPickup: 0,
+                  SelectedTimeSlotForSelfPickup: 5,
                   hasSelectedTimeSlotForSelfPickup: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, you can pick your order after 11:30 AM',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1349,7 +3493,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 0
+                    this.state.SelectedTimeSlotForSelfPickup == 5
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1358,36 +3502,28 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 1 hour
+                  After 1 Hour
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForSelfPickup: 1,
+                  SelectedTimeSlotForSelfPickup: 6,
                   hasSelectedTimeSlotForSelfPickup: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, you can pick your order after 12:30 AM',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1402,7 +3538,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 1
+                    this.state.SelectedTimeSlotForSelfPickup == 6
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1411,36 +3547,28 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 2 hours
+                  After 2 Hours
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  SelectedTimeSlotForSelfPickup: 2,
+                  SelectedTimeSlotForSelfPickup: 7,
                   hasSelectedTimeSlotForSelfPickup: true,
                 });
-                if (
-                  now < tenThirtyOClock &&
-                  this.state.selectedDeliveryDate.getDate() ===
-                    this.state.fiveDays[0].day.getDate()
-                )
-                  toast(
-                    'Store opening time is 10:30 AM, you can pick your order after 02:30 PM',
-                  );
               }}>
               <View
                 style={{
                   height: 50,
-                  backgroundColor: 'white',
+                  backgroundColor: '#fff',
                   marginTop: 1.5,
                   justifyContent: 'flex-start',
                   flexDirection: 'row',
                 }}>
                 <View
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {backgroundColor: '#ea0016'}
                       : {backgroundColor: '#efefef'},
                     ,
@@ -1455,7 +3583,7 @@ class Checkout extends React.Component {
                 />
                 <Text
                   style={[
-                    this.state.SelectedTimeSlotForSelfPickup == 2
+                    this.state.SelectedTimeSlotForSelfPickup == 7
                       ? {color: '#ea0016'}
                       : {color: 'black'},
                     {
@@ -1464,7 +3592,97 @@ class Checkout extends React.Component {
                       paddingLeft: 15,
                     },
                   ]}>
-                  Pickup after 4 hours or next day
+                  02 PM - 04 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 8,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 8
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  04 PM - 06 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 9,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
+              }}>
+              <View
+                style={{
+                  height: 50,
+                  backgroundColor: '#fff',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 9
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  06 PM - 08 PM
                 </Text>
               </View>
             </TouchableOpacity>
@@ -1474,73 +3692,61 @@ class Checkout extends React.Component {
     } else
       return (
         <>
-          <TouchableOpacity
-            onPress={() => {
-              this.setState({
-                SelectedTimeSlotForSelfPickup: 0,
-                hasSelectedTimeSlotForSelfPickup: true,
-              });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              // toast(
-              //   'Store opening time is 10:30 AM, you can pick your order after 11:30 AM',
-              // );
-            }}>
-            <View
-              style={{
-                height: 50,
-                backgroundColor: 'white',
-                marginTop: 1.5,
-                justifyContent: 'flex-start',
-                flexDirection: 'row',
+          {now > twentyOneOClock &&
+          now < twelveOClockAtNight &&
+          this.state.selectedDay === 1 ? null : (
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  SelectedTimeSlotForSelfPickup: 0,
+                  hasSelectedTimeSlotForSelfPickup: true,
+                });
               }}>
               <View
-                style={[
-                  this.state.SelectedTimeSlotForSelfPickup == 0
-                    ? {backgroundColor: '#ea0016'}
-                    : {backgroundColor: '#efefef'},
-                  ,
-                  {
-                    height: 20,
-                    width: 20,
-                    borderRadius: 360,
-                    alignSelf: 'center',
-                    marginLeft: 10,
-                  },
-                ]}
-              />
-              <Text
-                style={[
-                  this.state.SelectedTimeSlotForSelfPickup == 0
-                    ? {color: '#ea0016'}
-                    : {color: 'black'},
-                  {
-                    alignSelf: 'center',
-                    fontSize: 14,
-                    paddingLeft: 15,
-                  },
-                ]}>
-                )9 AM - 11 AM
-              </Text>
-            </View>
-          </TouchableOpacity>
+                style={{
+                  height: 50,
+                  backgroundColor: 'white',
+                  marginTop: 1.5,
+                  justifyContent: 'flex-start',
+                  flexDirection: 'row',
+                }}>
+                <View
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 0
+                      ? {backgroundColor: '#ea0016'}
+                      : {backgroundColor: '#efefef'},
+                    ,
+                    {
+                      height: 20,
+                      width: 20,
+                      borderRadius: 360,
+                      alignSelf: 'center',
+                      marginLeft: 10,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    this.state.SelectedTimeSlotForSelfPickup == 0
+                      ? {color: '#ea0016'}
+                      : {color: 'black'},
+                    {
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      paddingLeft: 15,
+                    },
+                  ]}>
+                  10 AM - 12 PM
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             onPress={() => {
               this.setState({
                 SelectedTimeSlotForSelfPickup: 1,
                 hasSelectedTimeSlotForSelfPickup: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              // toast(
-              //   'Store opening time is 10:30 AM, you can pick your order after 12:30 AM',
-              // );
             }}>
             <View
               style={{
@@ -1576,7 +3782,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                11 AM - 01 PM
+                12 PM - 02 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -1586,14 +3792,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForSelfPickup: 2,
                 hasSelectedTimeSlotForSelfPickup: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              // toast(
-              //   'Store opening time is 10:30 AM, you can pick your order after 02:30 PM',
-              // );
             }}>
             <View
               style={{
@@ -1629,7 +3827,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                01 PM - 03 PM
+                02 PM - 04 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -1640,14 +3838,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForSelfPickup: 3,
                 hasSelectedTimeSlotForSelfPickup: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, you can pick your order after 11:30 AM',
-              //   );
             }}>
             <View
               style={{
@@ -1683,7 +3873,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                03 PM - 05 PM
+                04 PM - 06 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -1693,14 +3883,6 @@ class Checkout extends React.Component {
                 SelectedTimeSlotForSelfPickup: 4,
                 hasSelectedTimeSlotForSelfPickup: true,
               });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, you can pick your order after 12:30 AM',
-              //   );
             }}>
             <View
               style={{
@@ -1736,60 +3918,7 @@ class Checkout extends React.Component {
                     paddingLeft: 15,
                   },
                 ]}>
-                05 PM - 07 PM
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              this.setState({
-                SelectedTimeSlotForSelfPickup: 5,
-                hasSelectedTimeSlotForSelfPickup: true,
-              });
-              // if (
-              //   now < tenThirtyOClock &&
-              //   this.state.selectedDeliveryDate.getDate() ===
-              //     this.state.fiveDays[0].day.getDate()
-              // )
-              //   toast(
-              //     'Store opening time is 10:30 AM, you can pick your order after 02:30 PM',
-              //   );
-            }}>
-            <View
-              style={{
-                height: 50,
-                backgroundColor: 'white',
-                marginTop: 1.5,
-                justifyContent: 'flex-start',
-                flexDirection: 'row',
-              }}>
-              <View
-                style={[
-                  this.state.SelectedTimeSlotForSelfPickup == 5
-                    ? {backgroundColor: '#ea0016'}
-                    : {backgroundColor: '#efefef'},
-                  ,
-                  {
-                    height: 20,
-                    width: 20,
-                    borderRadius: 360,
-                    alignSelf: 'center',
-                    marginLeft: 10,
-                  },
-                ]}
-              />
-              <Text
-                style={[
-                  this.state.SelectedTimeSlotForSelfPickup == 5
-                    ? {color: '#ea0016'}
-                    : {color: 'black'},
-                  {
-                    alignSelf: 'center',
-                    fontSize: 14,
-                    paddingLeft: 15,
-                  },
-                ]}>
-                05 PM - 07 PM
+                06 PM - 08 PM
               </Text>
             </View>
           </TouchableOpacity>
@@ -1857,37 +3986,20 @@ class Checkout extends React.Component {
   };
 
   getPromoWalletAndMainWalletBalance = async () => {
-    var url = promoWalletAndMainWalletBalance(this.props.login.userId);
-    this.setState({isWalletDataLoading: true});
-    await Axios.get(url, {
-      headers: {
-        Authorization: 'bearer ' + '',
-        'Content-type': 'application/json',
-      },
-      timeout: 15000,
-    })
-      .then(response => {
-        console.log('All Wallet data->', response.data);
-        // [0].balancePont
-        this.setState({
-          walletbalanncedata: response.data,
-          isWalletDataLoading: false,
-        });
-        var promoDiscount = 0;
-        if (response.data.promoWalletAmount != 0) {
-          promoDiscount = Math.round(findCartTotal(this.props.cart.cart) / 20);
-          this.setState({promoDiscount: promoDiscount});
-        } else {
-          this.setState({promoDiscount: 0});
-        }
-      })
-      .catch(error => {
-        console.log('Error', error.message);
-        this.setState({isWalletDataLoading: false});
-      });
+    var walletData = this.props.walletData.wallet;
+    this.setState({
+      walletbalanncedata: walletData,
+    });
+    var promoDiscount = 0;
+    if (this.props.walletData.wallet.promoWalletAmount != 0) {
+      promoDiscount = Math.round(findCartTotal(this.props.cart.cart) / 20);
+      this.setState({promoDiscount: promoDiscount});
+    } else {
+      this.setState({promoDiscount: 0});
+    }
   };
 
-  deliveryOrConvineanceFeeCalculator = promoDiscount => {
+  deliveryOrConvineanceFeeCalculator = () => {
     const cartTotal = findCartTotal(this.props.cart.cart);
     const deliveryDay = this.state.selectedDay;
     if (this.state.deliveryType === 0) {
@@ -1897,48 +4009,95 @@ class Checkout extends React.Component {
         const deliveryTimeSlot = this.state.SelectedTimeSlotForHomeDelivery;
         var deliveryCharge = 0;
         if (deliveryDay === 0) {
-          if (distance <= 1 && deliveryTimeSlot === 0) {
+          if (
+            distance <= 1 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 30;
-          } else if (distance > 1 && distance <= 2 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 1 &&
+            distance <= 2 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 45;
-          } else if (distance > 2 && distance <= 3 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 2 &&
+            distance <= 3 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 60;
-          } else if (distance > 3 && distance <= 4 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 3 &&
+            distance <= 4 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 75;
-          } else if (distance > 4 && distance <= 5 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 4 &&
+            distance <= 5 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 90;
-          } else if (distance > 5 && distance <= 6 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 5 &&
+            distance <= 6 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 100;
-          } else if (distance > 6 && deliveryTimeSlot === 0) {
+          } else if (
+            distance > 6 &&
+            (deliveryTimeSlot === 5 || deliveryTimeSlot === 10)
+          ) {
             deliveryCharge = 150;
-          } else if (distance <= 1 && deliveryTimeSlot === 1) {
+          } else if (
+            distance <= 1 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 20;
-          } else if (distance > 1 && distance <= 2 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 1 &&
+            distance <= 2 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 30;
-          } else if (distance > 2 && distance <= 3 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 2 &&
+            distance <= 3 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 40;
-          } else if (distance > 3 && distance <= 4 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 3 &&
+            distance <= 4 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 50;
-          } else if (distance > 4 && distance <= 5 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 4 &&
+            distance <= 5 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 60;
-          } else if (distance > 5 && distance <= 6 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 5 &&
+            distance <= 6 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 70;
-          } else if (distance > 6 && deliveryTimeSlot === 1) {
+          } else if (
+            distance > 6 &&
+            (deliveryTimeSlot === 6 || deliveryTimeSlot === 11)
+          ) {
             deliveryCharge = 100;
-          } else if (distance <= 1 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 1 && distance <= 2 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 2 && distance <= 3 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 3 && distance <= 4 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 4 && distance <= 5 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 5 && distance <= 6 && deliveryTimeSlot === 2) {
-            deliveryCharge = 0;
-          } else if (distance > 6 && deliveryTimeSlot === 2) {
+          } else if (
+            distance > 6 &&
+            (deliveryTimeSlot === 7 ||
+              deliveryTimeSlot === 8 ||
+              deliveryTimeSlot === 9)
+          ) {
             deliveryCharge = 15 * Math.floor(distance);
+          } else {
+            deliveryCharge = 0;
           }
         } else {
           if (distance <= 6) {
@@ -1964,7 +4123,7 @@ class Checkout extends React.Component {
       if (deliveryDay === 0) {
         const pickUpTimeSlot = this.state.SelectedTimeSlotForSelfPickup;
         var convenianceFee = 0;
-        if (pickUpTimeSlot === 0) {
+        if (pickUpTimeSlot === 5 || pickUpTimeSlot === 10) {
           var convFee1 = Math.round(cartTotal / 100);
           if (convFee1 < 30) {
             convenianceFee = 30;
@@ -1973,7 +4132,7 @@ class Checkout extends React.Component {
           } else {
             convenianceFee = convFee1;
           }
-        } else if (pickUpTimeSlot === 1) {
+        } else if (pickUpTimeSlot === 6 || pickUpTimeSlot === 11) {
           var convFee2 = Math.round(cartTotal / 200);
           if (convFee2 < 20) {
             convenianceFee = 20;
@@ -1982,133 +4141,17 @@ class Checkout extends React.Component {
           } else {
             convenianceFee = convFee2;
           }
-        } else if (pickUpTimeSlot === 3) {
+        } else if (
+          pickUpTimeSlot === 7 ||
+          pickUpTimeSlot === 8 ||
+          pickUpTimeSlot === 9
+        ) {
           convenianceFee = 0;
         }
       } else {
         convenianceFee = 0;
       }
       return convenianceFee;
-    }
-  };
-
-  startRazorpay = (
-    clubbedPayment,
-    walletAmount,
-    finalOrderAmount,
-    dataToBePostedOnServer,
-  ) => {
-    if (clubbedPayment === 1) {
-      var newAmount = finalOrderAmount - walletAmount;
-      // newAmount = newAmount.toFixed(2)
-      newAmount = Math.round(newAmount * 100) / 100;
-
-      newAmount = newAmount * 100;
-      var options = {
-        description: 'Payment For Order',
-        image: 'https://i.ibb.co/z8vLzxB/asdfa.jpg',
-        currency: 'INR',
-        key: 'rzp_live_SOgPs8jiYRFTOw',
-        amount: newAmount,
-        name: 'NEEDS Market',
-        Theme: {color: '#F30'},
-      };
-      RazorpayCheckout.open(options)
-        .then(data => {
-          // handle success
-          alert(`Success: ${data.razorpay_payment_id}`);
-          // this.removeBalanceFromWallet(walletAmount);
-          if (walletAmount != 0) {
-            //post data to server
-            this.postDataToServer(dataToBePostedOnServer, walletAmount);
-            // this.removeBalanceFromMainWallet(
-            //   walletAmount,
-            //   walletAmount,
-            //   dataToBePostedOnServer,
-            // );
-          } else {
-            console.log('Posting data on server from clubbed razor payment');
-            // this.postOrderDataOnServer();
-          }
-        })
-        .catch(error => {
-          // handle failure
-          // console.log('error', error);
-          alert(`Error: ${error.code} | ${error.description}`);
-          this.setState({placeOrderModal: false});
-        });
-    } else {
-      var newAmount = finalOrderAmount;
-      newAmount = Math.round(newAmount * 100) / 100;
-      newAmount = newAmount * 100;
-      var options = {
-        description: 'Payment For Order',
-        image: 'https://i.ibb.co/z8vLzxB/asdfa.jpg',
-        currency: 'INR',
-        key: 'rzp_live_SOgPs8jiYRFTOw',
-        amount: newAmount,
-        name: 'NEEDS Market',
-        Theme: {color: '#F30'},
-      };
-      RazorpayCheckout.open(options)
-        .then(data => {
-          // handle success
-          alert(`Success: ${data.razorpay_payment_id}`);
-          // this.postOrderDataOnServer();
-          this.postDataToServer(dataToBePostedOnServer, 0);
-        })
-        .catch(error => {
-          // handle failure
-          // console.log('error', error);
-          alert(`Error: ${error.code} | ${error.description}`);
-        });
-    }
-  };
-
-  handleWalletPayment = (finalOrderAmount, dataToBePostedOnServer) => {
-    var walletAmount = 0;
-    if (!this.state.isWalletDataLoading) {
-      walletAmount = this.state.walletbalanncedata.walletAmount;
-      if (walletAmount < finalOrderAmount) {
-        Alert.alert(
-          `You do not have enough wallet balance!`,
-          `You have ₹ ${walletAmount} in your wallet.\nDo you want to recharge your wallet or pay the remaining amount using online payment?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
-              style: 'cancel',
-            },
-            {
-              text: 'Recharge',
-              onPress: () => {
-                Alert.alert('Work in progress!!');
-              },
-            },
-            {
-              text: 'Online',
-              onPress: () => {
-                this.startRazorpay(
-                  1,
-                  walletAmount,
-                  finalOrderAmount,
-                  dataToBePostedOnServer,
-                );
-              },
-            },
-            ,
-          ],
-          {cancelable: false},
-        );
-      } else {
-        this.postDataToServer(dataToBePostedOnServer, finalOrderAmount);
-        //post data to server
-        // this.removeBalanceFromMainWallet(
-        //   walletAmount,
-        //   finalOrderAmount,
-        //   dataToBePostedOnServer,
-        // );
-      }
     }
   };
 
@@ -2122,52 +4165,8 @@ class Checkout extends React.Component {
     const promoDiscount = promoDis;
     const deliveryDay = this.state.selectedDay;
     if (this.state.deliveryType === 0) {
-      const distance = this.props.nearestSupplier.supplierIdWithMinDist[0]
-        .distance;
-      if (this.state.hasSelectedTimeSlotForHomeDelivery) {
+      const distance = 0
         const deliveryTimeSlot = this.state.SelectedTimeSlotForHomeDelivery;
-        if (distance <= 1) {
-          if (cartTotal < 300) {
-            toast('Minimum order amount is 300');
-            return;
-          }
-        }
-        if (distance <= 2 && distance > 1) {
-          if (cartTotal < 400) {
-            toast('Minimum order amount is 400');
-            return;
-          }
-        }
-        if (distance <= 3 && distance > 2) {
-          if (cartTotal < 500) {
-            toast('Minimum order amount is 500');
-            return;
-          }
-        }
-        if (distance <= 4 && distance > 3) {
-          if (cartTotal < 600) {
-            toast('Minimum order amount is 600');
-            return;
-          }
-        }
-        if (distance <= 5 && distance > 4) {
-          if (cartTotal < 700) {
-            toast('Minimum order amount is 700');
-            return;
-          }
-        }
-        if (distance <= 6 && distance > 5) {
-          if (cartTotal < 800) {
-            toast('Minimum order amount is 800');
-            return;
-          }
-        }
-        if (distance > 6) {
-          if (cartTotal < 1000) {
-            toast('Minimum order amount is 1000');
-            return;
-          }
-        }
         console.log(
           'Order Success, amount to be paid===================>',
           cartTotal + deliveryOrConvenianceFee,
@@ -2181,11 +4180,7 @@ class Checkout extends React.Component {
           timeSlot = 'Within 4 - 6 Hours';
         }
         this.navigateToSuccess(
-          cartTotal +
-            deliveryOrConvenianceFee -
-            discount -
-            promoDiscount +
-            tipAmount,
+          cartTotal + deliveryOrConvenianceFee - discount - promoDiscount+parseInt(this.state.finalDc),
           new Date(),
           this.state.selectedDeliveryDate,
           this.state.paymentMode,
@@ -2196,16 +4191,14 @@ class Checkout extends React.Component {
           timeSlot,
           this.props.addresses.selectedAddress,
           deliveryOrConvenianceFee,
+          tipAmount,
         );
         console.log(
           'Order Success, amount to be paid===================>',
           cartTotal + deliveryOrConvenianceFee,
         );
-      } else {
-        toast('Please select a delivery time slot');
-      }
+    
     } else if (this.state.deliveryType === 1) {
-      if (this.state.hasSelectedTimeSlotForSelfPickup) {
         console.log(
           'Order success amount to be paid for self pickup order ========',
           cartTotal + deliveryOrConvenianceFee,
@@ -2221,11 +4214,7 @@ class Checkout extends React.Component {
           timeSlot = 'After 4 Hours or next day';
         }
         this.navigateToSuccess(
-          cartTotal +
-            deliveryOrConvenianceFee -
-            discount -
-            promoDiscount +
-            tipAmount,
+          cartTotal + deliveryOrConvenianceFee - discount - promoDiscount,
           new Date(),
           this.state.selectedDeliveryDate,
           this.state.paymentMode,
@@ -2236,11 +4225,9 @@ class Checkout extends React.Component {
           timeSlot,
           this.props.addresses.selectedAddress,
           deliveryOrConvenianceFee,
+          tipAmount,
         );
-      } else {
-        toast('Please select a pickup time slot');
-        return;
-      }
+      
     }
   };
 
@@ -2256,8 +4243,10 @@ class Checkout extends React.Component {
     timeSlot,
     selectedAddress,
     deliveryOrConvenianceFee,
+    tipAmount,
   ) => {
-    amountToBePaid = parseInt(amountToBePaid, 10);
+    var amountToBePaidALongWithTip = amountToBePaid + tipAmount;
+    amountToBePaidALongWithTip = parseInt(amountToBePaidALongWithTip, 10);
 
     var cartArray = [];
     this.props.cart.cart.map((item, index) => {
@@ -2293,25 +4282,85 @@ class Checkout extends React.Component {
 
     var timeString = '';
     if (this.state.deliveryType === 0) {
-      if (this.state.SelectedTimeSlotForHomeDelivery === 0) {
-        timeString = 'Within 1.5 Hour';
-      }
-      if (this.state.SelectedTimeSlotForHomeDelivery === 1) {
-        timeString = 'Within 3 hours';
-      }
-      if (this.state.SelectedTimeSlotForHomeDelivery === 2) {
-        timeString = 'Within 4 - 6 hours';
+      if (this.state.selectedDay === 0) {
+        if (this.state.SelectedTimeSlotForHomeDelivery === 5) {
+          timeString = 'Within 1.5 Hour';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 6) {
+          timeString = 'Within 3 Hours';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 7) {
+          timeString = '02 PM - 04 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 8) {
+          timeString = '04 PM - 06 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 9) {
+          timeString = '06 PM - 08 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 10) {
+          timeString = 'Before 11:30 AM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 11) {
+          timeString = 'Before 01 PM';
+        }
+      } else {
+        if (this.state.SelectedTimeSlotForHomeDelivery === 0) {
+          timeString = '10 AM - 12 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 1) {
+          timeString = '12 PM - 02 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 2) {
+          timeString = '02 PM - 04 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 3) {
+          timeString = '04 PM - 06 PM';
+        }
+        if (this.state.SelectedTimeSlotForHomeDelivery === 4) {
+          timeString = '06 PM - 08 PM';
+        }
       }
     }
     if (this.state.deliveryType === 1) {
-      if (this.state.SelectedTimeSlotForSelfPickup === 0) {
-        timeString = 'After 1 Hour';
-      }
-      if (this.state.SelectedTimeSlotForSelfPickup === 1) {
-        timeString = 'After 2 hours';
-      }
-      if (this.state.SelectedTimeSlotForSelfPickup === 2) {
-        timeString = 'After 4 hours or next day';
+      if (this.state.selectedDay == 0) {
+        if (this.state.SelectedTimeSlotForSelfPickup === 5) {
+          timeString = 'After 1 Hour';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 6) {
+          timeString = 'After 2 Hours';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 7) {
+          timeString = '02 PM - 04 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 8) {
+          timeString = '04 PM - 06 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 9) {
+          timeString = '06 PM - 08 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 10) {
+          timeString = 'After 11 AM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 11) {
+          timeString = 'After 12 PM';
+        }
+      } else {
+        if (this.state.SelectedTimeSlotForSelfPickup === 0) {
+          timeString = '10 AM - 12 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 1) {
+          timeString = '12 PM - 02 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 2) {
+          timeString = '02 PM - 04 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 3) {
+          timeString = '04 PM - 06 PM';
+        }
+        if (this.state.SelectedTimeSlotForSelfPickup === 4) {
+          timeString = '06 PM - 08 PM';
+        }
       }
     }
 
@@ -2321,8 +4370,8 @@ class Checkout extends React.Component {
       orderAmount: amountToBePaid,
       supplier:
         this.state.deliveryType === 0
-          ? this.props.nearestSupplier.supplierIdWithMinDist[0].id
-          : 59,
+          ? this.props.cart.cart[0].supplierId
+          : this.props.cart.cart[0].supplierId,
       customer: this.props.login.userId,
       orderFrom: Platform.OS === 'ios' ? 'ios' : 'android',
       society: this.props.addresses.selectedAddress.landmark
@@ -2331,11 +4380,11 @@ class Checkout extends React.Component {
 
       promoWallet: promoDiscount,
       mainWallet: 0,
+      tip: tipAmount,
       // requiredTime:
-      convenienceFee:
-        this.state.deliveryType === 0 ? 0 : deliveryOrConvenianceFee,
-      deliveryCharges:
-        this.state.deliveryType === 0 ? deliveryOrConvenianceFee : 0,
+      convenienceFee: deliveryOrConvenianceFee,
+      // deliveryCharges:
+      //   this.state.deliveryType === 0 ? deliveryOrConvenianceFee : 0,
       couponDiscount: 0.0,
       deliveryType:
         this.state.deliveryType === 1 ? 'SELF-PICKUP' : 'HOME-DELIVERY',
@@ -2361,79 +4410,29 @@ class Checkout extends React.Component {
       ],
     };
 
+    console.log('Navigating to wallet');
+    this.props.navigation.navigate('PaymentOptions', {
+      walletData: this.state.walletbalanncedata,
+      body: body,
+      amountToBePaidALongWithTip: amountToBePaidALongWithTip,
+      amountToBePaid: amountToBePaid,
+      tipAmount: tipAmount,
+      cartTotal: findCartTotal(this.props.cart.cart),
+      promoDiscount: this.state.promoDiscount,
+    });
+
     console.log('Here is body of cart upload', body);
-
-    if (paymentMode === 'COD') {
-      console.log('placing order', paymentMode);
-      Alert.alert(
-        `Have you checked your order?`,
-        ``,
-        [
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-          },
-          {
-            text: 'Place Order',
-            onPress: () => {
-              this.postDataToServer(body, 0);
-            },
-          },
-          ,
-        ],
-        {cancelable: false},
-      );
-    } else if (paymentMode === 'ONLINE PAYMENT') {
-      this.startRazorpay(0, 0, amountToBePaid, body);
-      console.log('placing order', paymentMode);
-    } else if (paymentMode === 'WALLET') {
-      console.log('placing order', paymentMode);
-      this.handleWalletPayment(amountToBePaid, body);
-    }
-    console.log('placing order');
-  };
-
-  postDataToServer = async (dataToBePosted, mainWalletDeductionAmount) => {
-    var updatedDAta = dataToBePosted;
-    console.log('Posting this data on server', dataToBePosted);
-    updatedDAta.mainWallet = mainWalletDeductionAmount;
-    console.log('Here is updated data', updatedDAta);
-
-    const url = cartPostUrl();
-    console.log(url);
-    this.setState({uploadingOrderDataToServer: true});
-
-    await Axios.post(url, updatedDAta, {
-      headers: {
-        Authorization: 'Bearer ' + this.props.login.accessToken,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(resp => {
-        console.log('Here is cart response', resp, '00000000000000000');
-        this.setState({uploadingOrderDataToServer: false});
-        toast(resp.data.message);
-        this.props.navigation.navigate('Success', {
-          orderData: updatedDAta,
-          promoDiscount: this.state.promoDiscount,
-          cartTotal: findCartTotal(this.props.cart.cart),
-          serverResp: resp,
-        });
-        this.props.deleteAllItemsFromCart();
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({uploadingOrderDataToServer: false});
-      });
   };
 
   render() {
-    const deliveryOrConvineanceFee = this.deliveryOrConvineanceFeeCalculator();
+
+    const deliveryOrConvineanceFee = 0;
     const cartTotal = findCartTotal(this.props.cart.cart);
     const tipAmount =
       this.state.tipAmount != '' ? parseInt(this.state.tipAmount) : 0;
     // const promoDiscount = this.promoDiscountCalculator(cartTotal);
+    var Tax=findCartTotal(this.props.cart.cart)*18/100
+    var TotalPrice=findCartTotal(this.props.cart.cart)*82/100
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         {this.state.uploadingOrderDataToServer && (
@@ -2454,77 +4453,77 @@ class Checkout extends React.Component {
             justifyContent: 'center',
           }}>
           <View
+          style={{
+            height: '10%',
+            flexDirection: 'row',
+            paddingHorizontal: 10,
+            backgroundColor: 'white',
+            paddingTop: 5,
+          }}>
+          <TouchableWithoutFeedback
             style={{
-              height: '10%',
-              flexDirection: 'row',
-              paddingHorizontal: 10,
+              height: 42,
+              width: 42,
+              borderRadius: 360,
+              marginLeft: -3.5,
               backgroundColor: 'white',
-              paddingTop: 5,
-            }}>
-            <TouchableWithoutFeedback
-              style={{
-                height: 42,
-                width: 42,
-                borderRadius: 360,
-                marginLeft: -3.5,
-                backgroundColor: 'white',
-                justifyContent: 'center',
-              }}
-              onPress={() => this.props.navigation.goBack()}>
-              <View
-                style={{
-                  height: 35,
-                  width: 35,
-                  borderRadius: 360,
-                  elevation: 2,
-                  backgroundColor: 'white',
-                  justifyContent: 'center',
-                  alignSelf: 'center',
-                }}>
-                <Image
-                  source={require('../assets/a1.png')}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    padding: 5,
-                    alignSelf: 'center',
-                    alignItems: 'center',
-                    borderRadius: 360,
-                    backgroundColor: 'white',
-                    elevation: 2,
-                  }}
-                />
-              </View>
-            </TouchableWithoutFeedback>
+              justifyContent: 'center',
+            }}
+            onPress={() => this.props.navigation.goBack()}>
             <View
               style={{
-                height: 42,
+                height: 35,
+                width: 35,
+                borderRadius: 360,
+                elevation: 2,
+                backgroundColor: 'white',
                 justifyContent: 'center',
-                flexDirection: 'row',
                 alignSelf: 'center',
               }}>
-              <Text
+              <Image
+                source={require('../assets/a1.png')}
                 style={{
-                  fontSize: 20,
+                  width: 18,
+                  height: 18,
+                  padding: 5,
                   alignSelf: 'center',
-                  paddingLeft: 10,
-                }}>
-                CHECKOUT
-              </Text>
-              <Text
-                style={{
-                  fontSize: 20,
-                  alignSelf: 'center',
-                  paddingLeft: 10,
-                  color: '#7a7a7a',
+                  alignItems: 'center',
+                  borderRadius: 360,
+                  backgroundColor: 'white',
+                  elevation: 2,
                 }}
               />
             </View>
+          </TouchableWithoutFeedback>
+          <View
+            style={{
+              height: 42,
+              justifyContent: 'center',
+              flexDirection: 'row',
+              alignSelf: 'center',
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                alignSelf: 'center',
+                paddingLeft: 10,
+              }}>
+              CHECKOUT
+            </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                alignSelf: 'center',
+                paddingLeft: 10,
+                color: '#7a7a7a',
+              }}
+            />
           </View>
-
+        </View>
           <ScrollView
             style={{height: '92%'}}
             showsVerticalScrollIndicator={false}>
+              {this.state.deliveryType === 0?
             <View
               style={{
                 height: 100,
@@ -2628,7 +4627,7 @@ class Checkout extends React.Component {
                   '\n' +
                   this.props.addresses.selectedAddress.pincode}
               </Text>
-            </View>
+            </View>:null}
             {this.state.deliveryType == 0 ? (
               <View
                 style={{
@@ -2686,13 +4685,13 @@ class Checkout extends React.Component {
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => this.setState({deliveryType: 1})}
+                  onPress={() => this.setState({deliveryType: 1,finalDc:0})}
                   style={{alignSelf: 'center', zIndex: 1}}>
                   <View
                     style={{
                       height: 40,
                       width: SCREEN_WIDTH / 2,
-                      backgroundColor: 'black',
+                      backgroundColor: '#37474f',
                       alignSelf: 'center',
                       borderRadius: 20,
                       justifyContent: 'space-evenly',
@@ -2729,13 +4728,13 @@ class Checkout extends React.Component {
                   alignItems: 'center',
                 }}>
                 <TouchableOpacity
-                  onPress={() => this.setState({deliveryType: 0})}
+                  onPress={() => {this.distancecalculater(),this.setState({deliveryType: 0})}}
                   style={{alignSelf: 'center', zIndex: 1}}>
                   <View
                     style={{
                       height: 40,
                       width: SCREEN_WIDTH / 2,
-                      backgroundColor: 'black',
+                      backgroundColor: '#37474f',
                       alignSelf: 'center',
                       borderRadius: 20,
                       justifyContent: 'space-evenly',
@@ -2801,19 +4800,8 @@ class Checkout extends React.Component {
                 </TouchableOpacity>
               </View>
             )}
-            <FlatList
-              data={this.state.fiveDays}
-              horizontal
-              style={{marginTop: 10, marginBottom: 8.5}}
-              extraData={this.state.deldata}
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={this.renderFiveDates}
-            />
-
-            {this.state.deliveryType === 0
-              ? this.renderHomeDeliveryTimeSlots()
-              : this.renderSelfPickupTimeSlots()}
+       
+         
 
             <View
               style={{
@@ -2886,204 +4874,234 @@ class Checkout extends React.Component {
                   </Text>
                 </View>
               </View>
-              <View
-                style={{
-                  height: '30%',
-                  backgroundColor: 'white',
-                  flexDirection: 'row',
-                  elevation: 1,
-                }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.setState({
-                      tipAmount: '50',
-                      isGivingTip: true,
-                      selectedTipValue: 1,
-                    });
-                  }}
-                  style={{
-                    height: '60%',
-                    width: 65,
-                    borderColor: '#ea0016',
-                    borderWidth: 1,
-                    borderRadius: 2,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                    marginLeft: 20,
-                    backgroundColor:
-                      this.state.selectedTipValue === 1 ? '#ea0016' : '#fff',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontFamily: 'sans-serif',
-                      alignSelf: 'center',
-                      color:
-                        this.state.selectedTipValue === 1 ? '#fff' : '#000',
-                    }}>
-                    Rs. 50
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.setState({
-                      tipAmount: '75',
-                      isGivingTip: true,
-                      selectedTipValue: 2,
-                    });
-                  }}
-                  style={{
-                    height: '60%',
-                    width: 55,
-                    borderColor: '#ea0016',
-                    borderWidth: 1,
-                    borderRadius: 2,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                    marginLeft: 20,
-                    backgroundColor:
-                      this.state.selectedTipValue === 2 ? '#ea0016' : '#fff',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontFamily: 'sans-serif',
-                      alignSelf: 'center',
-                      color:
-                        this.state.selectedTipValue === 2 ? '#fff' : '#000',
-                    }}>
-                    Rs. 75
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.setState({
-                      tipAmount: '100',
-                      isGivingTip: true,
-                      selectedTipValue: 3,
-                    });
-                  }}
-                  style={{
-                    height: '60%',
-                    width: 65,
-                    borderColor: '#ea0016',
-                    borderWidth: 1,
-                    borderRadius: 2,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                    marginLeft: 20,
-                    backgroundColor:
-                      this.state.selectedTipValue === 3 ? '#ea0016' : '#fff',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontFamily: 'sans-serif',
-                      alignSelf: 'center',
-                      color:
-                        this.state.selectedTipValue === 3 ? '#fff' : '#000',
-                    }}>
-                    Rs. 100
-                  </Text>
-                </TouchableOpacity>
+              <ScrollView
+                horizontal={true}
+                style={{flex: 1}}
+                showsHorizontalScrollIndicator={false}>
                 <View
                   style={{
-                    height: '60%',
-                    width: 65,
-                    borderColor: '#ea0016',
-                    borderWidth: 1,
-                    borderRadius: 2,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                    marginLeft: 20,
-                    backgroundColor: '#fbfbfb',
+                    height: '100%',
+                    backgroundColor: 'white',
+                    flexDirection: 'row',
+                    elevation: 1,
+                    paddingRight: 20,
+                    minWidth: SCREEN_WIDTH,
                   }}>
-                  <TextInput
-                    placeholder={'Amount'}
-                    placeholderTextColor={'#a7a7a7'}
-                    value={this.state.tipAmount}
-                    keyboardType="numeric"
-                    onChangeText={text => {
-                      if (text.length > 0) {
-                        this.setState({
-                          tipAmount: text,
-                          isGivingTip: true,
-                          selectedTipValue: -1,
-                        });
-                      } else {
-                        this.setState({
-                          tipAmount: '',
-                          isGivingTip: false,
-                          selectedTipValue: -1,
-                        });
-                      }
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({
+                        tipAmount: '20',
+                        isGivingTip: true,
+                        selectedTipValue: 1,
+                      });
                     }}
                     style={{
-                      height: 50,
-                      color: 'black',
+                      height: '60%',
+                      width: 65,
+                      borderColor: '#ea0016',
+                      borderWidth: 1,
+                      borderRadius: 2,
                       alignSelf: 'center',
-                      width: 55,
-                      fontSize: 13,
-                    }}
-                  />
-                </View>
-                {this.state.tipAmount != '' ? (
-                  <View style={{height: '60%'}}>
-                    <Icon
-                      name={'close'}
-                      onPress={() =>
-                        this.setState({
-                          tipAmount: '',
-                          selectedTipValue: -1,
-                          isGivingTip: false,
-                        })
-                      }
-                      size={15}
-                      color="#ea0016"
+                      justifyContent: 'center',
+                      marginLeft: 20,
+                      backgroundColor:
+                        this.state.selectedTipValue === 1 ? '#ea0016' : '#fff',
+                    }}>
+                    <Text
                       style={{
+                        fontSize: 15,
+                        fontFamily: 'sans-serif',
                         alignSelf: 'center',
-                        paddingHorizontal: 15,
-                        paddingVertical: 15,
+                        color:
+                          this.state.selectedTipValue === 1 ? '#fff' : '#000',
+                      }}>
+                      Rs. 20
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({
+                        tipAmount: '50',
+                        isGivingTip: true,
+                        selectedTipValue: 2,
+                      });
+                    }}
+                    style={{
+                      height: '60%',
+                      width: 55,
+                      borderColor: '#ea0016',
+                      borderWidth: 1,
+                      borderRadius: 2,
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      marginLeft: 20,
+                      backgroundColor:
+                        this.state.selectedTipValue === 2 ? '#ea0016' : '#fff',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontFamily: 'sans-serif',
+                        alignSelf: 'center',
+                        color:
+                          this.state.selectedTipValue === 2 ? '#fff' : '#000',
+                      }}>
+                      Rs. 50
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({
+                        tipAmount: '100',
+                        isGivingTip: true,
+                        selectedTipValue: 3,
+                      });
+                    }}
+                    style={{
+                      height: '60%',
+                      width: 65,
+                      borderColor: '#ea0016',
+                      borderWidth: 1,
+                      borderRadius: 2,
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      marginLeft: 20,
+                      backgroundColor:
+                        this.state.selectedTipValue === 3 ? '#ea0016' : '#fff',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontFamily: 'sans-serif',
+                        alignSelf: 'center',
+                        color:
+                          this.state.selectedTipValue === 3 ? '#fff' : '#000',
+                      }}>
+                      Rs. 100
+                    </Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      height: '60%',
+                      width: 90,
+                      borderColor: '#ea0016',
+                      borderWidth: 1,
+                      borderRadius: 2,
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      marginLeft: 20,
+                      backgroundColor: '#fbfbfb',
+                    }}>
+                    <TextInput
+                      placeholder={'Amount'}
+                      placeholderTextColor={'#a7a7a7'}
+                      value={this.state.tipAmount}
+                      keyboardType="numeric"
+                      onChangeText={text => {
+                        if (text.length > 0) {
+                          this.setState({
+                            tipAmount: text,
+                            isGivingTip: true,
+                            selectedTipValue: -1,
+                          });
+                        } else {
+                          this.setState({
+                            tipAmount: '',
+                            isGivingTip: false,
+                            selectedTipValue: -1,
+                          });
+                        }
+                      }}
+                      style={{
+                        height: 50,
+                        color: 'black',
+                        alignSelf: 'center',
+                        width: 55,
+                        fontSize: 13,
                       }}
                     />
                   </View>
-                ) : null}
-              </View>
+                  {this.state.tipAmount != '' ? (
+                    <View style={{height: '60%'}}>
+                      <Icon
+                        name={'close'}
+                        onPress={() =>
+                          this.setState({
+                            tipAmount: '',
+                            selectedTipValue: -1,
+                            isGivingTip: false,
+                          })
+                        }
+                        size={15}
+                        color="#ea0016"
+                        style={{
+                          alignSelf: 'center',
+                          paddingLeft: 15,
+                          paddingVertical: 15,
+                        }}
+                      />
+                    </View>
+                  ) : null}
+                </View>
+              </ScrollView>
             </View>
 
             <View
               style={{
-                height: 240,
+                // height: 240,
                 backgroundColor: '#FFFBDE',
                 // marginTop: 10,
                 elevation: 1.5,
                 paddingHorizontal: 23,
                 justifyContent: 'space-evenly',
+                paddingVertical: 15,
               }}>
               <View>
                 <Text style={{fontSize: 18, fontWeight: 'bold'}}>BILLING</Text>
                 <Text
                   style={{
                     fontSize: 10,
-                    fontFamily: 'sans-serif-thin',
-                    color: 'black',
+                    color: 'black',marginBottom:10
                   }}>
-                  NEEDS MARKET BILLING INFO
+                  SUPER COOKS BILLING INFO
                 </Text>
               </View>
 
               <View
                 style={{
-                  height: this.state.isGivingTip ? 140 : 120,
+                  height: this.state.isGivingTip ? 170 : 150,
                   justifyContent: 'space-evenly',
                 }}>
+                   <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingVertical: 3,
+                  }}>
+                  <Text style={{fontSize: 14}}>Total Price</Text>
+                  <Text style={{fontSize: 14}}>
+                    Rs. {TotalPrice.toFixed(2)}
+                  </Text>
+                </View>
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
+                    paddingVertical: 3,
                   }}>
-                  <Text style={{fontSize: 14}}>Item Total</Text>
+                  <Text style={{fontSize: 14}}>Tax</Text>
                   <Text style={{fontSize: 14}}>
+                    Rs. {Tax.toFixed(2)}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingVertical: 3,
+                  }}>
+                  <Text style={{fontSize: 14,fontWeight:"900"}}>Item Total</Text>
+                  <Text style={{fontSize: 14,fontWeight:"900"}}>
                     Rs. {findCartTotal(this.props.cart.cart)}
                   </Text>
                 </View>
@@ -3091,6 +5109,7 @@ class Checkout extends React.Component {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
+                    paddingVertical: 3,
                   }}>
                   <Text style={{fontSize: 14, color: '#EA0016'}}>
                     {this.state.deliveryType === 0
@@ -3098,20 +5117,20 @@ class Checkout extends React.Component {
                       : 'Convenience Fee'}
                   </Text>
                   <Text style={{fontSize: 14, color: '#EA0016'}}>
-                    Rs. {deliveryOrConvineanceFee}
+                    Rs. {this.state.deliveryType === 0? parseInt(this.state.finalDc):0}
                   </Text>
                 </View>
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
+                    paddingVertical: 3,
                   }}>
                   <Text style={{fontSize: 14}}>
                     Promo Discount {`\n`}
                     <Text
                       style={{
                         fontSize: 10,
-                        fontFamily: 'sans-serif-thin',
                         color: 'black',
                         width: '40%',
                       }}
@@ -3128,6 +5147,7 @@ class Checkout extends React.Component {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
+                    paddingVertical: 3,
                     // borderBottomWidth: 1,
                     // borderBottomColor: 'white',
                     // paddingBottom: 16,
@@ -3142,6 +5162,7 @@ class Checkout extends React.Component {
                       justifyContent: 'space-between',
                       borderBottomWidth: 1,
                       borderBottomColor: 'white',
+                      paddingVertical: 3,
                       paddingBottom: 16,
                     }}>
                     <Text style={{fontSize: 14}}>Tip</Text>
@@ -3151,10 +5172,12 @@ class Checkout extends React.Component {
                   </View>
                 )}
               </View>
-              <View
+              {/* <View
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
+                  paddingVertical: 3,
+                  backgroundColor: 'gray',
                 }}>
                 <Text style={{fontSize: 14, fontWeight: 'bold'}}>To Pay</Text>
                 <Text style={{fontSize: 14, fontWeight: 'bold'}}>
@@ -3162,6 +5185,34 @@ class Checkout extends React.Component {
                   {cartTotal +
                     deliveryOrConvineanceFee -
                     this.state.promoDiscount +
+                    tipAmount}
+                </Text>
+              </View> */}
+            </View>
+            <View
+              style={{
+                // height: 240,
+                backgroundColor: '#FFFBDE',
+
+
+                // marginTop: 10,
+                elevation: 1.5,
+                paddingHorizontal: 23,
+                justifyContent: 'space-evenly',
+                paddingVertical: 15,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingVertical: 3,
+                }}>
+                <Text style={{fontSize: 14, fontWeight: 'bold'}}>To Pay</Text>
+                <Text style={{fontSize: 14, fontWeight: 'bold'}}>
+                  Rs.{' '}
+                  {cartTotal +
+                    deliveryOrConvineanceFee -
+                    this.state.promoDiscount +parseInt(this.state.finalDc)+
                     tipAmount}
                 </Text>
               </View>
@@ -3191,10 +5242,16 @@ class Checkout extends React.Component {
                     alignSelf: 'flex-start',
                     borderBottomColor: 'black',
                   }}>
+                  <Icon
+                    name="clipboard-outline"
+                    size={21}
+                    style={{alignSelf: 'center', paddingLeft: 10}}
+                  />
+
                   <Text
                     style={{
                       color: 'black',
-                      fontFamily: 'sans-serif-condensed',
+                      fontWeight: 'bold',
                       fontSize: 12,
                       alignSelf: 'center',
                       paddingLeft: 10,
@@ -3235,34 +5292,21 @@ class Checkout extends React.Component {
                 justifyContent: 'center',
                 paddingLeft: 10,
               }}>
-              <TouchableOpacity
-                onPress={() => {
-                  this.setState({
-                    isTemperaryModelShown: !this.state.isTemperaryModelShown,
-                  });
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingHorizontal: 5,
+                  justifyContent: 'space-between',
                 }}>
-                <View
+                <Text
                   style={{
-                    flexDirection: 'row',
-                    paddingHorizontal: 5,
-                    justifyContent: 'space-between',
+                    color: 'black',
+                    fontSize: 11,
+                    alignSelf: 'center',
                   }}>
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 11,
-                      alignSelf: 'center',
-                    }}>
-                    PAYMENT OPTIONS
-                  </Text>
-                  <Icon
-                    name={'chevron-down'}
-                    size={25}
-                    style={{alignSelf: 'center'}}
-                  />
-                </View>
-              </TouchableOpacity>
-
+                  AMOUNT TO BE PAID
+                </Text>
+              </View>
               <Text
                 style={{
                   fontWeight: 'bold',
@@ -3270,18 +5314,23 @@ class Checkout extends React.Component {
                   alignSelf: 'flex-start',
                   paddingLeft: 5,
                 }}>
-                {this.state.paymentMode}
+                {'Rs. ' +
+                  (cartTotal +
+                    deliveryOrConvineanceFee -
+                    this.state.promoDiscount +parseInt(this.state.finalDc)+
+                    tipAmount)}
               </Text>
             </View>
             <TouchableOpacity
-              // onPress={() => this.props.navigation.navigate('Success')}
+              // onPress={() => this.props.navigation.navigate('PaymentOptions')}
               onPress={() => {
-                if (this.state.paymentMode === 'NOT SELECTED') {
-                  toast('Please select a payment mode');
-                  this.setState({
-                    isTemperaryModelShown: !this.state.isTemperaryModelShown,
-                  });
-                } else if (this.state.isWalletDataLoading) {
+                // if (this.state.paymentMode === 'NOT SELECTED') {
+                //   toast('Please select a payment mode');
+                //   this.setState({
+                //     isTemperaryModelShown: !this.state.isTemperaryModelShown,
+                //   });
+                // } else
+                if (this.state.isWalletDataLoading) {
                   toast('Please wait while we get your wallet info');
                   return;
                 } else {
@@ -3289,7 +5338,7 @@ class Checkout extends React.Component {
                     cartTotal,
                     deliveryOrConvineanceFee,
                     this.state.promoDiscount,
-                    tipAmount,
+                    tipAmount,parseInt(this.state.finalDc)
                   );
                 }
               }}
@@ -3305,7 +5354,7 @@ class Checkout extends React.Component {
                   fontWeight: 'bold',
                   fontSize: 18,
                 }}>
-                FINISH ORDER
+                PAYMENTS
               </Text>
 
               <View />
@@ -3380,7 +5429,7 @@ class Checkout extends React.Component {
             </TouchableOpacity>
           </View>
         </Modal>
-        <Modal
+        {/* <Modal
           animationType="slide"
           transparent={true}
           visible={this.state.isTemperaryModelShown}>
@@ -3499,7 +5548,7 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  paymentMode: 'ONLINE PAYMENT',
+                  paymentMode: 'ONLINE',
                 });
               }}
               style={{
@@ -3509,22 +5558,18 @@ class Checkout extends React.Component {
                 borderRadius: 10,
                 justifyContent: 'center',
                 borderColor:
-                  this.state.paymentMode === 'ONLINE PAYMENT'
-                    ? '#EA0016'
-                    : '#aaa',
+                  this.state.paymentMode === 'ONLINE' ? '#EA0016' : '#aaa',
                 borderWidth: 2,
               }}>
               <Text
                 style={{
                   color:
-                    this.state.paymentMode === 'ONLINE PAYMENT'
-                      ? '#EA0016'
-                      : '#aaa',
+                    this.state.paymentMode === 'ONLINE' ? '#EA0016' : '#aaa',
                 }}>
                 ONLINE PAYMENT
               </Text>
             </TouchableOpacity>
-            {this.state.paymentMode === 'ONLINE PAYMENT' ? (
+            {this.state.paymentMode === 'ONLINE' ? (
               <View
                 style={{
                   backgroundColor: '#fff',
@@ -3582,7 +5627,7 @@ class Checkout extends React.Component {
             <TouchableOpacity
               onPress={() => {
                 this.setState({
-                  paymentMode: 'WALLET',
+                  paymentMode: 'wallet',
                 });
               }}
               style={{
@@ -3593,18 +5638,18 @@ class Checkout extends React.Component {
                 justifyContent: 'center',
 
                 borderColor:
-                  this.state.paymentMode === 'WALLET' ? '#EA0016' : '#aaa',
+                  this.state.paymentMode === 'wallet' ? '#EA0016' : '#aaa',
                 borderWidth: 2,
               }}>
               <Text
                 style={{
                   color:
-                    this.state.paymentMode === 'WALLET' ? '#EA0016' : '#aaa',
+                    this.state.paymentMode === 'wallet' ? '#EA0016' : '#aaa',
                 }}>
                 WALLET
               </Text>
             </TouchableOpacity>
-            {this.state.paymentMode === 'WALLET' ? (
+            {this.state.paymentMode === 'wallet' ? (
               <View
                 style={{
                   backgroundColor: '#fff',
@@ -3668,7 +5713,7 @@ class Checkout extends React.Component {
               </View>
             ) : null}
           </View>
-        </Modal>
+        </Modal> */}
       </SafeAreaView>
     );
   }

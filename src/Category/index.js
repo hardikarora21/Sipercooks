@@ -240,7 +240,7 @@ class Categories extends React.Component {
             </TouchableWithoutFeedback>
           </View>
           {/* <List.Section> */}
-          {this.state.categoryData.length > 0 &&
+          {/* {this.state.categoryData.length > 0 &&
           !this.state.isCategoryDataLoading
             ? this.state.categoryData.map((item, index) => {
                 return (
@@ -379,7 +379,7 @@ class Categories extends React.Component {
                   </View>
                 );
               })
-            : null}
+            : null} */}
           {/* </List.Section> */}
         </ScrollView>
       </SafeAreaView>

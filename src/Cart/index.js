@@ -79,8 +79,10 @@ class Cart extends React.Component {
           <Image
             style={{
               height: '80%',
-              width: '100%',
-              resizeMode: 'contain',
+              width: '80%',
+              resizeMode: 'cover',
+              alignSelf: 'center',
+              borderRadius: 5,
             }}
             source={
               item.medias && item.medias[0] && item.medias[0].mediaUrl
@@ -141,7 +143,9 @@ class Cart extends React.Component {
               });
             }}>
             <Text style={{fontSize: 12, fontWeight: 'bold', marginTop: -10}}>
-              {item.product.name}
+              {item.product && item.product.name
+                ? item.product.name
+                : item.name}{' '}
             </Text>
           </TouchableOpacity>
           <View
@@ -160,7 +164,11 @@ class Cart extends React.Component {
                 }}
                 numberOfLines={1}>
                 Rs.
-                {item.sellingPrice}
+                {item &&
+                item.productListings &&
+                item.productListings[0].sellingPrice
+                  ? item.productListings[0].sellingPrice
+                  : item.sellingPrice}
                 {'   '}
               </Text>
               <Text
@@ -183,7 +191,9 @@ class Cart extends React.Component {
                 }}
                 numberOfLines={1}>
                 MRP. Rs.
-                {item.mrp}
+                {item && item.productListings && item.productListings[0].mrp
+                  ? item.productListings[0].mrp
+                  : item.mrp}{' '}
               </Text>
               <Text
                 style={{

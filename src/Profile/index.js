@@ -65,9 +65,7 @@ class Profile extends React.Component {
   onShare = async referalCode => {
     try {
       const result = await Share.share({
-        message:
-          'Inviting you to NEEDS Market, a division of Le Millennia Supermart, and a pioneer in online grocery shopping in Gurgaon. Download Now!!! APP STORE: https://apps.apple.com/us/app/needs-supermarket/id1511210707?ls=1 / PLAY STORE: https://play.google.com/store/apps/details?id=com.needssupermarket  REFERRAL CODE: ' +
-          referalCode,
+        message: 'Inviting you to Super Cooks',
       });
 
       if (result.action === Share.sharedAction) {
@@ -224,7 +222,9 @@ class Profile extends React.Component {
                       width: '80%',
                       alignSelf: 'center',
                       justifyContent: 'center',
-                      backgroundColor: '#fce8ea',
+                      backgroundColor: 'white',
+                      borderWidth: 1,
+                      borderColor: '#efefef',
                       borderRadius: 360,
                     }}>
                     <Image
@@ -473,7 +473,6 @@ class Profile extends React.Component {
                   text="Terms & Conditions"
                   iconRightName="chevron-right"
                   onPressFunction={() => {
-                    this.props.navigation.navigate('TermsAndCondition');
                     console.log('Terms & Conditions pressed');
                   }}
                 />
@@ -481,10 +480,10 @@ class Profile extends React.Component {
                 <ListItem
                   leftIcon={true}
                   leftIconName="package-variant-closed"
-                  text="Privecy policy"
+                  text="Privacy policy"
                   iconRightName="chevron-right"
                   onPressFunction={() => {
-                    console.log('Privecy policy pressed');
+                    console.log('Privacy policy pressed');
                   }}
                 />
 
@@ -495,16 +494,6 @@ class Profile extends React.Component {
                   iconRightName="chevron-right"
                   onPressFunction={() => {
                     console.log('Return policy pressed');
-                  }}
-                />
-
-                <ListItem
-                  leftIcon={true}
-                  leftIconName="comment-question-outline"
-                  text="FAQs"
-                  iconRightName="chevron-right"
-                  onPressFunction={() => {
-                    this.props.navigation.navigate('FAQs');
                   }}
                 />
               </View>
@@ -534,7 +523,4 @@ class Profile extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Profile);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);

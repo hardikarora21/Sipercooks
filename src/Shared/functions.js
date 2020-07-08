@@ -19,17 +19,20 @@ export function createStringWithAllLettersCapital(string) {
 
 export function getDate(date) {
   console.log('New date', date);
-  var newDate = date.split('-');
-  var myDate =
-    newDate[2][0] +
-    newDate[2][1] +
-    ' ' +
-    getMonth(newDate[1]) +
-    ' ' +
-    newDate[0];
-  return myDate;
+  var newDate = String;
+  newDate = date;
+  if (date != undefined && date != null) {
+    newDate = newDate.split('-');
+    var myDate =
+      newDate[2][0] +
+      newDate[2][1] +
+      ' ' +
+      getMonth(newDate[1]) +
+      ' ' +
+      newDate[0];
+    return myDate;
+  }
 }
-
 export function getMonthForCheckout(num) {
   if (num == 0) {
     return 'Jan';
@@ -132,7 +135,7 @@ export function getDateAndTime(firestoreTimestamp) {
 export function findCartTotal(cart) {
   var total = 0;
   cart.map((item, index) => {
-    total += item.sellingPrice * item.productCountInCart;
+    total += item.productListings[0].sellingPrice * item.productCountInCart;
   });
   return total;
 }

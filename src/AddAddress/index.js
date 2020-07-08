@@ -18,13 +18,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ico from 'react-native-vector-icons/MaterialIcons';
 import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
 import GetLocation from 'react-native-get-location';
+import RNGooglePlaces from 'react-native-google-places';
 import Geocoder from 'react-native-geocoding';
 import {gioCoderApiKey} from '../../Config/Constants';
 var Querystringified = require('querystringify');
 import {uploadAddressUrl} from '../../Config/Constants';
 import Axios from 'axios';
 import {getuserAddresses} from '../Redux/Auth/ActionCreatore';
-
 import {connect} from 'react-redux';
 
 const mapStateToProps = state => {
@@ -50,9 +50,16 @@ class AddAddress extends React.Component {
     floor: '',
     howToReach: '',
     addressGeoCodedData: '',
+    wholeAddress: '',
+    locationName: '',
+    currentLocation: '',
   };
 
   componentDidMount() {
+    this.getCurrentoaction();
+  }
+
+  getCurrentoaction = () => {
     GetLocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 15000,
@@ -77,7 +84,7 @@ class AddAddress extends React.Component {
         console.log('error' + error);
       });
     Geocoder.init(gioCoderApiKey);
-  }
+  };
 
   postAddress = async () => {
     if (this.state.completeAddress === '') {
@@ -176,7 +183,7 @@ class AddAddress extends React.Component {
       this.props.navigation.goBack();
       // console.log('response.data.accessToken', response.data.access_token);
     } catch (e) {
-      console.log('e000', e);
+      console.log('e', e);
       // this.props.loginFail();
       return;
     }
@@ -184,17 +191,33 @@ class AddAddress extends React.Component {
     console.log(data_res);
   };
 
+  openSearchModal = () => {
+    RNGooglePlaces.openAutocompleteModal({country: 'IN'})
+      .then(place => {
+        console.log('locationNamelocationName', place);
+        Geocoder.from(place.location.latitude, place.location.longitude)
+          .then(json => {
+            this.setState({
+              address: json.results[0].formatted_address,
+              addressGeoCodedData: json.results[0],
+            });
+            console.log('formatted Address :', json.results[0]);
+          })
+          .catch(error => console.log('error geocds ' + JSON.stringify(error)));
+        this.setState({
+          longitude: place.location.longitude,
+          latitude: place.location.latitude,
+        });
+      })
+      .catch(error => console.log(error.message)); // error is a Javascript Error object
+  };
+
   render() {
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1, backgroundColor: 'white'}}>
+          
           <ScrollView showsVerticalScrollIndicator={false}>
-            <StatusBar
-              showHideTransition={'fade'}
-              hidden={true}
-              backgroundColor={'transparent'}
-            />
-
             <MapView
               style={{
                 height: Dimensions.get('window').height / 2,
@@ -296,15 +319,17 @@ class AddAddress extends React.Component {
                     {this.state.address}
                   </Text>
                 )}
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: '#EA0016',
-                    fontWeight: 'bold',
-                    alignSelf: 'center',
-                  }}>
-                  Change
-                </Text>
+                <TouchableOpacity onPress={this.openSearchModal}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: '#EA0016',
+                      fontWeight: 'bold',
+                      alignSelf: 'center',
+                    }}>
+                    Change
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
             <View
@@ -510,4 +535,7 @@ class AddAddress extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddAddress);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AddAddress);

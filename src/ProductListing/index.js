@@ -53,7 +53,8 @@ const mapDispatchToProps = dispatch => ({
   editDefaultVariant: (newVariant, indexOfProduct) =>
     dispatch(editDefaultVariant(newVariant, indexOfProduct)),
 
-  addOneItemToCart: newProduct => dispatch(addOneItemToCart(newProduct)),
+  addOneItemToCart: (newProduct, first) =>
+    dispatch(addOneItemToCart(newProduct, first)),
   deleteAllItemsFromCart: () => dispatch(deleteAllItemsFromCart()),
   deleteOneItemFromCart: index => dispatch(deleteOneItemFromCart(index)),
   increaseProductCount: (productId, variantSelectedByCustomer) =>
@@ -85,6 +86,7 @@ class Productlisting extends React.Component {
       currentPageForPagination: 1,
       fetchingAll: false, //this state check if the data being fetched is all products in a subCategory or products of a subSubCategory
       currentSubSubCategoryId: 0, //this holda the subSubCategoryId for the subSubCategory which is selected in sliding tabs panel
+      datasub: [],
     };
   }
 
@@ -95,6 +97,19 @@ class Productlisting extends React.Component {
       var id = this.props.route.params.catsup;
       this.fetchSubSubCategories(id);
       this.fetchAllProductsInThisSubcategory(id, 0);
+      Axios.get(
+        'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/stores/subscription/package/supplier/' +
+          id,
+      )
+        .then(response => {
+          console.log('CategoryCategory', response);
+          this.setState({datasub: response.data.object});
+
+          // return response;
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
     }
   }
 
@@ -129,7 +144,7 @@ class Productlisting extends React.Component {
         });
   };
 
-  fetchAllProductsInThisSubcategory = async (subCatId, pageNum) => {
+  fetchAllProductsInThisSubcategory = async (subCatId, pageNum, num) => {
     var url = fetchSubCategoryProductsUrl(pageNum, subCatId);
 
     if (this.state.firstRun) {
@@ -137,11 +152,11 @@ class Productlisting extends React.Component {
       this.props.deleteAllDefaultVarinats();
     }
 
-    pageNum === 1
+    num === 1
       ? this.setState({allSubCategoryProductsLoading: true})
       : this.setState({isPaginating: true}),
       await Axios.get(
-        'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v1/product/listing/supplier/' +
+        'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/stores/products/supplier/' +
           subCatId,
         {
           headers: {
@@ -184,8 +199,10 @@ class Productlisting extends React.Component {
       ? this.setState({allSubCategoryProductsLoading: true})
       : this.setState({isPaginating: true}),
       await Axios.get(
-        'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v1/product/listing/supplier/' +
-          subCatId,
+        'http://ec2-3-7-159-160.ap-south-1.compute.amazonaws.com/api/v3/stores/products/supplier/' +
+          subCatId +
+          '?categoryId=' +
+          pageNum,
         {
           headers: {
             Authorization: 'bearer ' + ' ',
@@ -281,7 +298,7 @@ class Productlisting extends React.Component {
               this.props.deleteAllDefaultVarinats();
               this.fetchAllProductsInThisSubcategory1(
                 this.props.route.params.catsup,
-                1,
+                '',
               );
             }}
             style={{
@@ -335,8 +352,8 @@ class Productlisting extends React.Component {
                       this.props.deleteAllDefaultVarinats();
                       this.fetchAllProductsInThisSubcategory1(
                         this.props.route.params.catsup,
-                        this.state.subSubCategories[index].id,
-                        subcatid,
+                        item.id,
+                        0,
                       );
                     }}
                     style={{
@@ -444,40 +461,48 @@ class Productlisting extends React.Component {
                     style={{
                       height: 230,
                       backgroundColor: 'white',
-                      paddingVertical: 10,
-                      borderRadius: 5,
+                      paddingBottom: 10,
+                      borderRadius: 8,
                       marginBottom: 2,
                       borderRadius: 5,
                       width: Dimensions.get('window').width / 2 - 15,
                       marginLeft: 10,
                       marginTop: 10,
                       elevation: 2,
+                      overflow: 'hidden',
                     }}>
-                    <View
-                      style={{
-                        height: 130,
-                        width: '100%',
-                        overflow: 'hidden',
-                      }}>
-                      <Image
+                    <TouchableWithoutFeedback onPress={() => {}}>
+                      <View
                         style={{
-                          height: '100%',
+                          height: 130,
                           width: '100%',
-                          resizeMode: 'contain',
-                          alignSelf: 'center',
-                          zIndex: 1,
-                        }}
-                        source={
-                          item && item.category && item.category.media
-                            ? {
-                                uri: item.category.media,
-                              }
-                            : require('../assets/foodbg.png')
-                        }
-                      />
-                    </View>
+                          overflow: 'hidden',
+                        }}>
+                        <Image
+                          style={{
+                            height: '100%',
+                            width: '100%',
+                            resizeMode: 'cover',
+                            alignSelf: 'center',
+                            zIndex: 1,
+                          }}
+                          source={
+                            item &&
+                            item.productListings &&
+                            item.productListings[0].medias[0]
+                              ? {
+                                  uri:
+                                    item.productListings[0].medias[0].mediaUrl,
+                                }
+                              : require('../assets/foodbg.png')
+                          }
+                        />
+                      </View>
+                    </TouchableWithoutFeedback>
 
-                    {item.sellingPrice - item.mrp > 0 ? (
+                    {item.productListings[0].sellingPrice -
+                      item.productListings[0].mrp <
+                    0 ? (
                       <View
                         style={{
                           height: 17,
@@ -498,7 +523,10 @@ class Productlisting extends React.Component {
                             color: 'white',
                           }}
                           numberOfLines={1}>
-                          Rs. {item.sellingPrice - item.mrp} OFF
+                          Rs.{' '}
+                          {item.productListings[0].mrp -
+                            item.productListings[0].sellingPrice}{' '}
+                          OFF
                         </Text>
                       </View>
                     ) : null}
@@ -516,7 +544,9 @@ class Productlisting extends React.Component {
                           paddingLeft: 8,
                         }}
                         numberOfLines={1}>
-                        {item.product.name}
+                        {item.product && item.product.name
+                          ? item.product.name.toUpperCase()
+                          : item.name.toUpperCase()}
                       </Text>
                       <View
                         style={{
@@ -533,24 +563,42 @@ class Productlisting extends React.Component {
                               fontWeight: 'bold',
                               alignSelf: 'center',
                             }}>
-                            Rs. {item.sellingPrice}
+                            Rs.{' '}
+                            {item &&
+                            item.productListings &&
+                            item.productListings[0].sellingPrice
+                              ? parseInt(item.productListings[0].sellingPrice)
+                              : item.sellingPrice}
                           </Text>
-                          <Text
-                            style={{
-                              fontSize: 8.5,
-                              color: '#a7a7a7',
-                            }}>
-                            MRP{' '}
+                          {item &&
+                          item.productListings &&
+                          item.productListings[0].sellingPrice -
+                            item.productListings[0].mrp <
+                            0 ? (
                             <Text
                               style={{
                                 fontSize: 8.5,
-                                textDecorationLine: 'line-through',
                                 color: '#a7a7a7',
-                              }}
-                              numberOfLines={1}>
-                              Rs. {item.mrp}
+                              }}>
+                              MRP{' '}
+                              <Text
+                                style={{
+                                  fontSize: 8.5,
+                                  textDecorationLine: 'line-through',
+                                  color: '#a7a7a7',
+                                }}
+                                numberOfLines={1}>
+                                Rs.{' '}
+                                {item &&
+                                item.productListings &&
+                                item.productListings[0].sellingPrice -
+                                  item.productListings[0].mrp <
+                                  0
+                                  ? parseInt(item.productListings[0].mrp)
+                                  : ''}
+                              </Text>
                             </Text>
-                          </Text>
+                          ) : null}
 
                           {/* <Image
                     style={{height: 20, width: 20}}
@@ -565,6 +613,7 @@ class Productlisting extends React.Component {
                         ) === -1 ? (
                           <TouchableOpacity
                             onPress={() => {
+                              var cartLength = this.props.cart.cart.length;
                               var currentItem = item;
                               currentItem.productCountInCart = 1;
                               currentItem.variantSelectedByCustome = this.props.defaultVariants.defaultVariants[
@@ -587,7 +636,13 @@ class Productlisting extends React.Component {
                               //               .defaultVariants[index],
                               //         )
                               //       ].sellingPrice;
-                              this.props.addOneItemToCart(currentItem);
+
+                              this.props.addOneItemToCart(
+                                currentItem,
+                                cartLength > 0
+                                  ? this.props.cart.cart[0]
+                                  : 'Empty',
+                              );
                             }}>
                             <Text
                               style={{
@@ -1003,9 +1058,9 @@ class Productlisting extends React.Component {
 
   renderHeader = subcategoryName => {
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={{flex: 1, flexDirection: 'column', paddingTop: 10}}>
         <View style={styles.header}>
-          <View style={{felx: 1}}>
+          <View style={{flex: 1, flexDirection: 'row'}}>
             <TouchableWithoutFeedback
               style={styles.goBackTouchable}
               onPress={() => this.props.navigation.goBack()}>
@@ -1017,49 +1072,51 @@ class Productlisting extends React.Component {
               </View>
             </TouchableWithoutFeedback>
           </View>
-          <View style={{flex: 8}}>
+          <View style={{flex: 6}}>
             <Text numberOfLines={1} style={styles.headerTitle}>
-              {subcategoryName}
+              {'      '} {this.props.route.params.catname}
             </Text>
           </View>
-          <View style={{flex: 1}}>
+          <View style={{flex: 3}}>
+            {this.state.datasub.length > 0 ? (
+              <TouchableWithoutFeedback
+                style={{}}
+                onPress={() =>
+                  this.props.navigation.navigate('Subscription', {
+                    cat_name: this.props.route.params.catname,
+                    ca_id: this.props.route.params.catsup,
+                  })
+                }>
+                <View
+                  style={{
+                    borderWidth: 1,
+                    paddingHorizontal: 5,
+                    justifyContent: 'center',
+                    borderRadius: 10,
+                    borderColor: 'blue',
+                    alignSelf: 'center',
+                    marginTop: 5,
+                  }}>
+                  <Text
+                    style={{fontSize: 12, alignSelf: 'center', color: 'blue'}}>
+                    Subscription
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            ) : null}
             {/* <TouchableOpacity
               onPress={() => this.setState({filterModalVisible: true})}
               style={{alignSelf: 'center', height: 25, width: 25}}> */}
-            <Image
-              style={{
-                height: 25,
-                alignSelf: 'center',
-                width: 25,
-                resizeMode: 'contain',
-              }}
-              source={require('../assets/p2.png')}
-            />
+
             {/* </TouchableOpacity> */}
           </View>
         </View>
-        <View style={{flex: 1, marginHorizontal: (SCREEN_WIDTH / 40) * 2}}>
-          <TouchableWithoutFeedback
-            onPress={() => this.props.navigation.navigate('Search')}>
-            <View style={styles.textInputView}>
-              <Ico
-                name={'search'}
-                style={{alignSelf: 'center', color: 'gray'}}
-                size={18}
-              />
-              <TextInput
-                editable={false}
-                style={styles.headerTextInput}
-                placeholder={'Search'}
-                placeholderTextColor="gray"
-              />
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
+        <View
+          style={{flex: 1, marginHorizontal: (SCREEN_WIDTH / 40) * 2}}></View>
         <View
           style={{
             justifyContent: 'space-between',
-            height: 220,
+            height: 80,
             width: Dimensions.get('window').width,
             marginLeft: 10,
           }}>
@@ -1069,15 +1126,6 @@ class Productlisting extends React.Component {
               justifyContent: 'space-between',
               paddingRight: 10,
             }}>
-            <Text
-              numberOfLines={2}
-              style={{
-                fontSize: 18,
-                paddingLeft: 10,
-                fontWeight: 'bold',
-              }}>
-              {this.props.route.params.catname}
-            </Text>
             {/* <View
               style={{
                 borderWidth: 1,
@@ -1177,7 +1225,13 @@ class Productlisting extends React.Component {
               35 mins
             </Text>
           </View>
-          <View style={{flexDirection: 'row', marginTop: 5, paddingLeft: 10}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginTop: 5,
+              marginBottom: 10,
+              paddingLeft: 10,
+            }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -1213,145 +1267,6 @@ class Productlisting extends React.Component {
               Live Tracking
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              height: 50,
-              marginTop: 5,
-              backgroundColor: '#f2f2f2',
-              width: Dimensions.get('window').width,
-              elevation: 2,
-            }}>
-            <Icon
-              name={'check-circle'}
-              size={21}
-              color={'blue'}
-              style={{alignSelf: 'center', paddingLeft: 10}}
-            />
-            <View style={{width: '80%', alignSelf: 'center', paddingLeft: 10}}>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  paddingLeft: '1%',
-                }}>
-                Dilevery to - Sector 33, Gurgaon, India
-              </Text>
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: 'bold',
-                  paddingLeft: '1%',
-                  color: 'orange',
-                }}>
-                Rs. 20 surge Fee applicable
-              </Text>
-            </View>
-          </View>
-          <View
-            style={{
-              height: 70,
-              marginTop: 1,
-              justifyContent: 'space-evenly',
-              backgroundColor: 'white',
-              width: Dimensions.get('window').width,
-              elevation: 2,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                height: 30,
-                marginTop: 5,
-                width: Dimensions.get('window').width,
-              }}>
-              <Icon
-                name={'shield'}
-                size={21}
-                color={'blue'}
-                style={{alignSelf: 'center', paddingLeft: 10}}
-              />
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 12,
-                  color: 'blue',
-                  paddingLeft: 10,
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                }}>
-                Safety Measures followed by the Restaurant
-              </Text>
-            </View>
-            <ScrollView
-              horizontal
-              style={{height: 40, paddingLeft: 10}}
-              showsHorizontalScrollIndicator={false}>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 12,
-                  color: 'blue',
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  borderWidth: 1,
-                  borderColor: 'blue',
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  marginRight: 10,
-                }}>
-                WHO Sanitize Protocol
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 12,
-                  marginRight: 10,
-
-                  color: 'blue',
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  borderWidth: 1,
-                  borderColor: 'blue',
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                }}>
-                Staff Wears Mask
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 12,
-                  color: 'blue',
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  borderWidth: 1,
-                  borderColor: 'blue',
-                  paddingHorizontal: 8,
-                  marginRight: 10,
-
-                  borderRadius: 12,
-                }}>
-                Staff Health Analysis
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 12,
-                  color: 'blue',
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  borderWidth: 1,
-                  borderColor: 'blue',
-                  paddingHorizontal: 8,
-                  marginRight: 15,
-
-                  borderRadius: 12,
-                }}>
-                Temprature Check
-              </Text>
-            </ScrollView>
-          </View>
         </View>
       </View>
     );
@@ -1365,7 +1280,7 @@ class Productlisting extends React.Component {
       <View style={styles.container}>
         <ParallaxHeader
           headerMinHeight={0}
-          headerMaxHeight={350}
+          headerMaxHeight={150}
           extraScrollHeight={10}
           navbarColor="#fff"
           title={this.renderHeader(subCatname)}
@@ -1401,6 +1316,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginHorizontal: (SCREEN_WIDTH / 40) * 2,
+    marginTop: 15,
   },
   goBackTouchable: {
     marginLeft: -13.5,

@@ -1,9 +1,10 @@
-package com.design;
+package com.supercooks;
 
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage;
 import com.faizal.OtpVerify.RNOtpVerifyPackage;

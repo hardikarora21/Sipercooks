@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   BackHandler,
   Alert,
+  ToastAndroid,
 } from 'react-native';
 import Ic from 'react-native-vector-icons/MaterialIcons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,6 +25,7 @@ import Axios from 'axios';
 import {
   deliveriblityCheckUrl,
   getNearestStoreUrl,
+  fetchCategoriesUrl,
 } from '../../Config/Constants';
 import {
   getuserAddresses,
@@ -109,38 +111,38 @@ class Address extends React.Component {
     this.setState({
       develireblityCheckLoading: true,
     });
-    var url = deliveriblityCheckUrl(
-      slelectedAddress.latitude,
-      slelectedAddress.longitude,
-    );
+    var url = fetchCategoriesUrl();
 
     console.log(slelectedAddress.latitude, slelectedAddress.longitude, url);
-
-    await Axios.get(url, {
-      headers: {
-        Authorization: 'bearer ' + '',
-        'Content-type': 'application/json',
+    console.log(
+      'ttt-->' +
+        url +
+        '1/' +
+        slelectedAddress.latitude +
+        '/' +
+        slelectedAddress.longitude,
+    );
+    await Axios.get(
+      url + '1/' + slelectedAddress.latitude + '/' + slelectedAddress.longitude,
+      {
+        headers: {
+          Authorization: 'bearer ' + '',
+          'Content-type': 'application/json',
+        },
+        timeout: 15000,
       },
-      timeout: 15000,
-    })
+    )
       .then(response => {
         console.log('Deliveriblity check data->', response.data.object);
         this.setState({
           develireblityCheckLoading: false,
           deleveriblityCheckData: response.data.object,
         });
-        if (response.data.object.length === 0) {
+        if (response.data.object.length == 0) {
           this.setState({develireblityCheckModelShown: true});
         } else {
-          console.log(
-            'Finding nearest address===========================================================================================> ',
-          );
-          this.findNearestStore(
-            slelectedAddress.latitude,
-            slelectedAddress.longitude,
-            59,
-          );
-          // this.setState({develireblityCheckModelShown: false});
+          ToastAndroid.show('Dilevery Address Selected', ToastAndroid.LONG);
+          this.setState({develireblityCheckModelShown: false});
           if (this.props.addresses.userAddresses.length === 1) {
             this.props.navigation.navigate('Setting').then(() => {
               this.props.addSelectedAddress(slelectedAddress);
@@ -209,7 +211,12 @@ class Address extends React.Component {
                   alignSelf: 'center',
                   marginTop: 2,
                 }}
-                onPress={() => this.props.navigation.goBack()}>
+                onPress={() =>
+                  ToastAndroid.show(
+                    'Please Select One Address',
+                    ToastAndroid.LONG,
+                  )
+                }>
                 <View
                   style={{
                     height: 35,
@@ -527,7 +534,7 @@ class Address extends React.Component {
                         textAlign: 'center',
                         marginTop: 10,
                       }}>
-                      welcome to NEEDS Market
+                      welcome to Super Cooks
                     </Text>
 
                     <Text
@@ -541,9 +548,9 @@ class Address extends React.Component {
                       }}>
                       'We do not have home delivery service to your location,
                       but you could still place an order and SELF PICK-UP from
-                      our Sohana Road, Gurgaon outlet\nWe would reach out to you
-                      whenever we open a store in your vicinity and start home
-                      delivery services'
+                      our Address{'\n'}We would reach out to you whenever we
+                      open a store in your vicinity and start home delivery
+                      services'
                     </Text>
                   </View>
                   <View
@@ -656,10 +663,7 @@ class Address extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Address);
+export default connect(mapStateToProps, mapDispatchToProps)(Address);
 
 const styles = StyleSheet.create({
   modalView: {

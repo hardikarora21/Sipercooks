@@ -1,4 +1,4 @@
-package com.design;
+package com.supercooks;
 
 import com.facebook.react.ReactActivity;
 

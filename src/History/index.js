@@ -170,7 +170,7 @@ class History extends React.Component {
               TYPE
             </Text>
             <Text style={[{color: '#a7a7a7'}, {fontSize: 12}]}>
-              {createStringWithAllLettersCapital(item.deliveryType)}
+              {item.deliveryType}
             </Text>
             <Text style={[{color: '#a7a7a7'}, {fontSize: 12}]}>{}</Text>
           </View>
@@ -378,7 +378,7 @@ class History extends React.Component {
                       color: '#a7a7a7',
                       fontSize: 21,
                     }}>
-                    You have not orderd anything...
+                    You have not ordered anything...
                   </Text>
                 </View>
                 <View style={{marginVertical: 20}}>

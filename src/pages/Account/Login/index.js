@@ -80,6 +80,7 @@ class Login extends React.Component {
       code: '',
       resendOtp: 1,
       showlogin: false,
+      Keyboard: false,
     };
   }
 
@@ -162,20 +163,25 @@ class Login extends React.Component {
       return;
     }
     var body = {
-      username: requestObject.phoneNo + '/' + 59,
+      username: requestObject.phoneNo + '/1',
       password: requestObject.otp,
       grant_type: 'password',
     };
     let data_res = Querystringified.stringify(body);
     var url = otpVerificationUrl();
+    console.log('Body for url------------>', body);
 
-    await Axios.post(url, data_res, {
-      headers: {
-        Authorization: 'Basic VVNFUl9DTElFTlRfQVBQOnBhc3N3b3Jk',
-        'Content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+    await Axios.post(
+      'http://ec2-3-6-120-2.ap-south-1.compute.amazonaws.com/oauth/token',
+      data_res,
+      {
+        headers: {
+          Authorization: 'Basic VVNFUl9DVVNUT01FUl9BUFA6cGFzc3dvcmQ=',
+          'Content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+        withCredentials: true,
       },
-      withCredentials: true,
-    })
+    )
       .then(response => {
         console.log('login response', response);
         console.log('response.data.accessToken', response.data.access_token);
@@ -201,7 +207,7 @@ class Login extends React.Component {
         });
       })
       .catch(err => {
-        console.log('e', err.message);
+        console.log('error kapil', JSON.stringify(err));
         this.props.loginFail();
         ToastAndroid.showWithGravity(
           'Login failed',
@@ -344,20 +350,46 @@ class Login extends React.Component {
                   barStyle={'dark-content'}
                   backgroundColor={'#fceae8'}
                 />
-                <View style={{height: '82%'}}>
-                  <Image
+                {this.state.Keyboard == false ? (
+                  <View
                     style={{
-                      height: '50%',
-                      width: '90%',
-                      resizeMode: 'contain',
-                      alignSelf: 'center',
-                    }}
-                    source={require('../../../assets/llog.png')}
-                  />
-                </View>
+                      height: '82%',
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      style={{
+                        height: 300,
+                        width: '100%',
+                        resizeMode: 'contain',
+                        alignSelf: 'center',
+                        marginTop: '9%',
+                      }}
+                      source={require('../../../assets/llog.png')}
+                    />
+                  </View>
+                ) : (
+                  <View
+                    style={{
+                      height: '52%',
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      style={{
+                        height: 300,
+                        width: '100%',
+                        resizeMode: 'contain',
+                        alignSelf: 'center',
+                      }}
+                      source={require('../../../assets/llog.png')}
+                    />
+                  </View>
+                )}
                 <View
                   style={{
                     justifyContent: 'space-between',
+                    height: '18%',
                   }}>
                   {this.state.showlogin == false ? (
                     <View>
@@ -421,7 +453,7 @@ class Login extends React.Component {
                       }}>
                       <Text
                         style={{
-                          color: 'white',
+                          color: 'black',
                           alignSelf: 'center',
                           textAlign: 'center',
                         }}>
@@ -463,6 +495,12 @@ class Login extends React.Component {
                         <TextInput
                           keyboardType={'number-pad'}
                           maxLength={10}
+                          onResponderStart={() =>
+                            this.setState({Keyboard: true})
+                          }
+                          onAccessibilityAction={() =>
+                            this.setState({Keyboard: false})
+                          }
                           placeholder={'Mobile Number'}
                           placeholderTextColor={'#e1e1e1'}
                           onChangeText={txt => this.setState({mobile: txt})}
@@ -553,14 +591,14 @@ class Login extends React.Component {
                           <Icon
                             name={'checkbox-blank-outline'}
                             onPress={() => this.setState({check: true})}
-                            color={'white'}
+                            color={'#ea0016'}
                             size={20}
                           />
                         ) : (
                           <Icon
                             name={'checkbox-marked'}
                             onPress={() => this.setState({check: false})}
-                            color={'white'}
+                            color={'#ea0016'}
                             size={20}
                           />
                         )}
@@ -570,11 +608,76 @@ class Login extends React.Component {
                             alignSelf: 'center',
                             paddingLeft: 10,
                             textAlign: 'center',
-                            color: 'white',
+                            color: 'black',
                           }}>
                           I Accept all the Terms and Conditions.
                         </Text>
                       </View>
+                      {this.state.Keyboard == true ? (
+                        <Text
+                          style={{
+                            alignSelf: 'center',
+                            textAlign: 'center',
+                            color: '#a7a7a7',
+                            marginTop: 55,
+                            fontWeight: 'bold',
+                          }}>
+                          Note : Login is required for Order Placing.
+                        </Text>
+                      ) : null}
+                      {this.state.Keyboard == true ? (
+                        <Text
+                          style={{
+                            alignSelf: 'center',
+                            textAlign: 'center',
+                            color: 'black',
+                            marginTop: 15,
+                          }}>
+                          Unable to Login ?{' '}
+                          <Text
+                            style={{
+                              alignSelf: 'center',
+                              textAlign: 'center',
+                              color: '#ea0016',
+                              marginTop: 15,
+                              fontFamily: 'sans-serif-condensed',
+                            }}>
+                            {' '}
+                            Contact Our Support
+                          </Text>
+                        </Text>
+                      ) : null}
+                      {this.state.Keyboard == true ? (
+                        <TouchableOpacity
+                          onPress={() => {
+                            ToastAndroid.showWithGravity(
+                              'Login Skipped.',
+                              ToastAndroid.SHORT,
+                              ToastAndroid.CENTER,
+                            );
+                            this.props.skipLogin();
+                          }}
+                          style={{
+                            height: 50,
+                            width: Dimensions.get('window').width / 1.25,
+                            backgroundColor: '#ef5854',
+                            alignSelf: 'center',
+                            marginBottom: 12,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderRadius: 50,
+                            marginTop: 50,
+                          }}>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 'bold',
+                              color: 'white',
+                            }}>
+                            Skip Login & Explore
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null}
                     </View>
                   )}
                 </View>
@@ -721,7 +824,15 @@ class Login extends React.Component {
                     <View style={[Layout.selfCenter, Layout.row]}>
                       <Text>Didn't get the code ? </Text>
                       {this.state.resendOtp ? (
-                        <Text style={[style.TextPrimary]}>Tap to Resend</Text>
+                        <TouchableOpacity>
+                          <Text
+                            style={[style.TextPrimary]}
+                            onPress={() =>
+                              this.validatePhoneNumber(this.state.mobile)
+                            }>
+                            Tap to Resend
+                          </Text>
+                        </TouchableOpacity>
                       ) : (
                         <Text style={[, style.TextPrimary]}>{''}</Text>
                       )}
